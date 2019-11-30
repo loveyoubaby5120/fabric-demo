@@ -587,8 +587,8 @@ var ServerView = /** @class */ (function (_super) {
             strokeWidth: 1,
             stroke: "#999",
             // 圆角
-            // rx: 10,
-            // ry: 10,
+            rx: 10,
+            ry: 10,
             // 旋转
             // angle: 45,
             // 缩放

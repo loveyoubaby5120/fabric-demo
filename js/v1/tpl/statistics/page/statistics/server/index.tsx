@@ -315,8 +315,8 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 strokeWidth: 1,
                 stroke: "#999",
                 // 圆角
-                // rx: 10,
-                // ry: 10,
+                rx: 10,
+                ry: 10,
                 // 旋转
                 // angle: 45,
                 // 缩放
