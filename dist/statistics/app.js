@@ -314,6 +314,17 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -330,6 +341,32 @@ var ServerView = /** @class */ (function (_super) {
     function ServerView(props) {
         var _this = _super.call(this, props) || this;
         _this.PROPORTION = { width: 1, height: 1 };
+        _this.lastPos = { x: 0, y: 0 };
+        _this.drag = false;
+        _this.topRect = [];
+        /** 箭头 */
+        _this.drawArrows = function (obj) {
+            var fromX = obj.fromX, fromY = obj.fromY, toX = obj.toX, toY = obj.toY, theta = obj.theta, headlen = obj.headlen;
+            var angle = Math.atan2(fromY - toY, fromX - toX) * 180 / Math.PI;
+            var angle1 = (angle + theta) * Math.PI / 180;
+            var angle2 = (angle - theta) * Math.PI / 180;
+            var topX = headlen * Math.cos(angle1);
+            var topY = headlen * Math.sin(angle1);
+            var botX = headlen * Math.cos(angle2);
+            var botY = headlen * Math.sin(angle2);
+            var path = "\n            M " + (toX + topX) + " " + (toY + topY) + " \n            L " + toX + " " + toY + " \n            L " + (toX + botX) + " " + (toY + botY) + "\n        ";
+            return path;
+        };
+        // 对象显示隐藏
+        _this.showHide = function (objs) {
+            (objs || []).forEach(function (r) {
+                r.visible = !r.visible;
+                if (r.text && typeof r.text === 'object') {
+                    r.text.visible = !r.text.visible;
+                }
+            });
+            _this.canvas.renderAll();
+        };
         /**
          * 处理window `resize`事件
          * @param factor draw 画布大小计算缩放比例
@@ -372,39 +409,237 @@ var ServerView = /** @class */ (function (_super) {
         configurable: true
     });
     ServerView.prototype.componentDidMount = function () {
-        this.canvas = new fabric_1.fabric.Canvas('an');
+        this.canvas = new fabric_1.fabric.Canvas('an', {
+            backgroundColor: '#eee',
+            // 禁用组选择
+            selection: false,
+        });
         window.addEventListener('resize', this.handleWindowResize);
         this.handleWindowResize();
-        this.drowRect();
-        this.drowPath();
-        this.canvas.on('mouse:dblclick', function (e) {
-            console.log(e);
+        this.drawTopRect();
+        this.subscriptionEvent();
+        this.linkRect();
+    };
+    /** 链接关系 */
+    ServerView.prototype.linkRect = function () {
+        var pathString = {
+            fromX: this.topRect[0].left + this.topRect[0].width,
+            fromY: this.topRect[0].top + this.topRect[0].height / 2,
+            toX: this.topRect[1].left,
+            toY: this.topRect[1].top + this.topRect[1].height / 2,
+            theta: 10,
+            headlen: 10,
+        };
+        var arrows = this.drawArrows(pathString);
+        var arrows2 = this.drawArrows(Object.assign({}, pathString, {
+            fromX: pathString.toX,
+            fromY: pathString.toY,
+            toX: pathString.fromX,
+            toY: pathString.fromY,
+        }));
+        var path = this.drawPath(arrows + " \n            M " + pathString.fromX + " " + pathString.fromY + " \n            L " + pathString.toX + " " + pathString.toY + " \n             " + arrows2, {
+            stroke: '#000',
+            strokeWidth: 1,
         });
+        this.canvas.add(path);
+    };
+    /**
+     * canvas 事件监听
+     */
+    ServerView.prototype.subscriptionEvent = function () {
+        var _this = this;
+        this.canvas.on({
+            'mouse:dblclick': function (e) {
+                // console.log('dblclick ', e);
+                if (e.target && e.target['label'] === 'top') {
+                    e.target.set({
+                        scaleX: e.target.scaleX === 1 ? 3 : 1,
+                        scaleY: e.target.scaleY === 1 ? 3 : 1,
+                        hoverCursor: e.target.hoverCursor === 'zoom-out' ? 'zoom-in' : 'zoom-out',
+                    });
+                    _this.showHide(e.target['subs'].concat(e.target['description']));
+                    // 修正四点定位
+                    e.target.setCoords();
+                }
+            },
+            'mouse:down': function (e) {
+                _this.lastPos = {
+                    x: e.e.clientX,
+                    y: e.e.clientY
+                };
+                _this.drag = true;
+            },
+            'mouse:up': function (e) {
+                _this.drag = false;
+                _this.deActiveObject();
+                if (e.target && e.target['label'] === 'top') {
+                    e.target.set({
+                        stroke: 'rgba(255, 255, 0, .4)',
+                    });
+                    _this.canvas.renderAll();
+                }
+            },
+            'mouse:move': function (e) {
+                if (_this.drag) {
+                    var vpt = _this.canvas.viewportTransform;
+                    _this.canvas.setViewportTransform(vpt.slice(0, 4).concat([
+                        vpt[4] + e.e.clientX - _this.lastPos.x,
+                        vpt[5] + e.e.clientY - _this.lastPos.y,
+                    ]));
+                    _this.lastPos.x = e.e.clientX;
+                    _this.lastPos.y = e.e.clientY;
+                }
+            },
+        });
+    };
+    /** 渲染顶级框 */
+    ServerView.prototype.drawTopRect = function () {
+        var _this = this;
+        var options = {
+            top: 50,
+            left: 100,
+            width: 100,
+            height: 100,
+        };
+        this.topRect = [1, 2, 3].map(function (r, i) {
+            options = {
+                top: options.top + Math.floor(i / 10) * 50,
+                left: options.left + i % 10 * 130,
+                width: 100,
+                height: 100,
+            };
+            var topRect = _this.drawRect(__assign({}, options, { hoverCursor: 'zoom-in' }));
+            topRect['label'] = 'top';
+            var titleText = _this.drawText('集群', {
+                left: options.left + options.width / 2,
+                top: options.top + options.height / 2 - 15,
+                originX: 'center',
+                originY: 'center',
+                visible: true,
+            });
+            var line = _this.drawPath("M " + (options.left + 10) + " " + (options.top + options.height / 2) + " \n                L " + (options.left + options.width - 10) + " " + (options.top + options.height / 2), {
+                fill: 'transparent',
+                stroke: '#999',
+                visible: true,
+            });
+            var numberText = _this.drawText('20', {
+                left: options.left + options.width / 2,
+                top: options.top + 15 + options.height / 2,
+                originX: 'center',
+                originY: 'center',
+                visible: true,
+            });
+            topRect['description'] = [titleText, line, numberText];
+            _this.canvas.add(topRect, titleText, line, numberText);
+            var subs = _this.drawSubRect(options);
+            topRect['subs'] = subs;
+            return topRect;
+        });
+    };
+    /** 渲染子集框 */
+    ServerView.prototype.drawSubRect = function (offset) {
+        var _this = this;
+        var sub = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].map(function (r, i) {
+            var top = offset.top + Math.floor(i / 10) * 50;
+            var left = offset.left + i % 10 * 30;
+            var rect = _this.drawRect({
+                left: left,
+                top: top,
+                width: 20,
+                height: 20,
+                visible: false,
+            });
+            var text = _this.drawText("" + r, {
+                left: left,
+                top: top,
+                visible: false,
+            });
+            rect.text = text;
+            _this.canvas.add(rect, text);
+            return rect;
+        });
+        return sub;
     };
     ServerView.prototype.render = function () {
         return (React.createElement("div", null,
             React.createElement("canvas", { id: 'an' })));
     };
-    ServerView.prototype.drowRect = function (config) {
-        var rect = new fabric_1.fabric.Rect(Object.assign({}, {
-            left: 100,
-            top: 50,
-            fill: '#D81B60',
-            width: 50,
-            height: 50,
-            strokeWidth: 2,
-            stroke: "#880E4F",
-            rx: 10,
-            ry: 10,
-            angle: 45,
-            scaleX: 3,
-            scaleY: 3,
-            hasControls: true,
-        }, config));
-        this.canvas.add(rect);
+    /**
+     * 取消高亮对象
+     */
+    ServerView.prototype.deActiveObject = function () {
+        this.topRect.forEach(function (obj, i) {
+            if (obj.set) {
+                obj.set({
+                    stroke: '#999',
+                });
+            }
+        });
+        this.canvas.renderAll();
     };
-    ServerView.prototype.drowPath = function () {
-        var line = new fabric_1.fabric.Path('M 65 0 Q 100, 100, 200, 0', { fill: '', stroke: 'black', objectCaching: false });
+    // 画四方形
+    ServerView.prototype.drawRect = function (option) {
+        if (option === void 0) { option = {}; }
+        var rect = new fabric_1.fabric.Rect(Object.assign({}, {
+            // 填充色
+            fill: '#fff',
+            // 边框
+            strokeWidth: 1,
+            stroke: "#999",
+            // 圆角
+            // rx: 10,
+            // ry: 10,
+            // 旋转
+            // angle: 45,
+            // 缩放
+            // scaleX: 3,
+            // scaleY: 3,
+            // 禁止四点定位
+            hasControls: false,
+            // 禁止选中
+            selectable: false,
+            // 鼠标样式
+            hoverCursor: 'default',
+        }, option));
+        return rect;
+    };
+    // 画连接线
+    ServerView.prototype.drawPath = function (path, option) {
+        if (path === void 0) { path = ''; }
+        if (option === void 0) { option = {}; }
+        var line = new fabric_1.fabric.Path(path || 'M 65 0 Q 100, 100, 200, 0', Object.assign({}, {
+            // 边框
+            stroke: 'black',
+            // 禁止四点定位
+            hasControls: false,
+            // 禁止选中
+            selectable: false,
+            // 鼠标样式
+            hoverCursor: 'default',
+        }, option));
+        return line;
+    };
+    // 画文案
+    ServerView.prototype.drawText = function (str, option) {
+        if (option === void 0) { option = {}; }
+        var text = new fabric_1.fabric.Text(str, Object.assign({}, {
+            // 字体对其方式
+            // originX: 'left',
+            // originY: 'top',
+            // 字体描边
+            stroke: '#000',
+            // 字体大小
+            fontSize: 12,
+            // 填充色
+            fill: 'transparent',
+            // 禁止四点定位
+            hasControls: false,
+            // 禁止选中
+            selectable: false,
+            // 鼠标样式
+            hoverCursor: 'default',
+        }, option));
+        return text;
     };
     ServerView = __decorate([
         radium_1.Radium

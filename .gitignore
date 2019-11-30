@@ -7,11 +7,12 @@
 # Mac 下 Finder 自动生成文件
 .DS_Store
 
-# dist
-dist/*
 
 # fusebox
 .fusebox
+
+# dist
+dist/*
 
 # dependencies
 node_modules

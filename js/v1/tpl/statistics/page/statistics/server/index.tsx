@@ -12,6 +12,8 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
     private lastPos: { x: number, y: number } = { x: 0, y: 0 };
     private drag = false;
 
+    private topRect: Array<fabric.Rect | any> = [];
+
     /**
      * 获取文档的大小
      */
@@ -38,16 +40,40 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         this.handleWindowResize();
         this.drawTopRect();
         this.subscriptionEvent();
+        this.linkRect();
     }
 
-    // 对象显示隐藏
-    showHide = (objs) => {
-        objs.forEach((r) => {
-            r.visible = !r.visible;
-            r.text.visible = !r.text.visible;
-        });
+    /** 链接关系 */
+    linkRect() {
+        const pathString = {
+            fromX: this.topRect[0].left + this.topRect[0].width,
+            fromY: this.topRect[0].top + this.topRect[0].height / 2,
+            toX: this.topRect[1].left,
+            toY: this.topRect[1].top + this.topRect[1].height / 2,
+            theta: 10,
+            headlen: 10,
+        };
 
-        this.canvas.renderAll();
+        const arrows = this.drawArrows(pathString);
+        const arrows2 = this.drawArrows(Object.assign({}, pathString, {
+            fromX: pathString.toX,
+            fromY: pathString.toY,
+            toX: pathString.fromX,
+            toY: pathString.fromY,
+        }));
+
+        const path = this.drawPath(
+            `${arrows} 
+            M ${pathString.fromX} ${pathString.fromY} 
+            L ${pathString.toX} ${pathString.toY} 
+             ${arrows2}`,
+            {
+                stroke: '#000',
+                strokeWidth: 1,
+            }
+        );
+
+        this.canvas.add(path);
     }
 
     /**
@@ -55,20 +81,21 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
      */
     subscriptionEvent() {
         this.canvas.on({
-            'mouse:dblclick': (e) => {
-                console.log('dblclick ', e);
+            'mouse:dblclick': (e: fabric.IEvent | any) => {
+                // console.log('dblclick ', e);
                 if (e.target && e.target['label'] === 'top') {
                     e.target.set({
                         scaleX: e.target.scaleX === 1 ? 3 : 1,
                         scaleY: e.target.scaleY === 1 ? 3 : 1,
                         hoverCursor: e.target.hoverCursor === 'zoom-out' ? 'zoom-in' : 'zoom-out',
                     });
-                    e.target.setCoords();
-                    this.showHide(e.target['sub']);
-                }
 
+                    this.showHide([...e.target['subs'], ...e.target['description']]);
+                    // 修正四点定位
+                    e.target.setCoords();
+                }
             },
-            'mouse:down': (e: any) => {
+            'mouse:down': (e: fabric.IEvent | any) => {
                 this.lastPos = {
                     x: e.e.clientX,
                     y: e.e.clientY
@@ -76,10 +103,16 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 this.drag = true;
             },
             'mouse:up': (e) => {
-                console.log('up ', e);
                 this.drag = false;
+                this.deActiveObject();
+                if (e.target && e.target['label'] === 'top') {
+                    e.target.set({
+                        stroke: 'rgba(255, 255, 0, .4)',
+                    });
+                    this.canvas.renderAll();
+                }
             },
-            'mouse:move': (e: any) => {
+            'mouse:move': (e: fabric.IEvent | any) => {
                 if (this.drag) {
                     const vpt = this.canvas.viewportTransform;
 
@@ -95,34 +128,74 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         });
     }
 
-    // 渲染顶级框
+    /** 渲染顶级框 */
     drawTopRect() {
-        let offset = {
+        let options = {
             top: 50,
             left: 100,
+            width: 100,
+            height: 100,
         };
-        [1, 2, 3].forEach((r, i) => {
-            offset = {
-                top: offset.top + Math.floor(i / 10) * 50,
-                left: offset.left + i % 10 * 130,
-            };
-
-            const topRect = this.drawRect({
-                ...offset,
+        this.topRect = [1, 2, 3].map((r, i) => {
+            options = {
+                top: options.top + Math.floor(i / 10) * 50,
+                left: options.left + i % 10 * 130,
                 width: 100,
                 height: 100,
+            };
+
+            const topRect: fabric.Rect | any = this.drawRect({
+                ...options,
                 hoverCursor: 'zoom-in',
             });
 
             topRect['label'] = 'top';
-            this.drawSubRect(topRect, offset);
+
+            const titleText = this.drawText(
+                '集群',
+                {
+                    left: options.left + options.width / 2,
+                    top: options.top + options.height / 2 - 15,
+                    originX: 'center',
+                    originY: 'center',
+                    visible: true,
+                },
+            );
+
+            const line = this.drawPath(
+                `M ${options.left + 10} ${options.top + options.height / 2} 
+                L ${options.left + options.width - 10} ${options.top + options.height / 2}`,
+                {
+                    fill: 'transparent',
+                    stroke: '#999',
+                    visible: true,
+                },
+            );
+
+            const numberText = this.drawText(
+                '20',
+                {
+                    left: options.left + options.width / 2,
+                    top: options.top + 15 + options.height / 2,
+                    originX: 'center',
+                    originY: 'center',
+                    visible: true,
+                },
+            );
+
+            topRect['description'] = [titleText, line, numberText];
+
+            this.canvas.add(topRect, titleText, line, numberText);
+
+            const subs = this.drawSubRect(options);
+            topRect['subs'] = subs;
+            return topRect;
         });
     }
 
-    // 渲染子集框
-    drawSubRect(topRect: fabric.Rect, offset: { left: number; top: number; }) {
-        topRect['sub'] = [];
-        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].forEach((r, i) => {
+    /** 渲染子集框 */
+    drawSubRect(offset: { left: number; top: number; }) {
+        const sub = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].map((r: any, i: number) => {
             let top = offset.top + Math.floor(i / 10) * 50;
             let left = offset.left + i % 10 * 30;
             const rect: any = this.drawRect({
@@ -132,18 +205,21 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 height: 20,
                 visible: false,
             });
+
             const text = this.drawText(
-                r,
+                `${r}`,
                 {
                     left,
                     top,
                     visible: false,
                 },
             );
+
             rect.text = text;
-            topRect['sub'].push(rect);
+            this.canvas.add(rect, text);
+            return rect;
         });
-        // this.drawPath('M 170 70 Q 160 90 110 100');
+        return sub;
     }
 
     render() {
@@ -152,6 +228,55 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 <canvas id='an'></canvas>
             </div>
         );
+    }
+
+    /** 箭头 */
+    private drawArrows = (obj: {
+        fromX: number, fromY: number, toX: number, toY: number, theta: number, headlen: number
+    }) => {
+        const { fromX, fromY, toX, toY, theta, headlen } = obj;
+
+        let angle = Math.atan2(fromY - toY, fromX - toX) * 180 / Math.PI;
+        let angle1 = (angle + theta) * Math.PI / 180;
+        let angle2 = (angle - theta) * Math.PI / 180;
+        let topX = headlen * Math.cos(angle1);
+        let topY = headlen * Math.sin(angle1);
+        let botX = headlen * Math.cos(angle2);
+        let botY = headlen * Math.sin(angle2);
+
+        let path = `
+            M ${toX + topX} ${toY + topY} 
+            L ${toX} ${toY} 
+            L ${toX + botX} ${toY + botY}
+        `;
+
+        return path;
+    }
+
+    /**
+     * 取消高亮对象
+     */
+    private deActiveObject() {
+        this.topRect.forEach((obj, i) => {
+            if (obj.set) {
+                obj.set({
+                    stroke: '#999',
+                })
+            }
+        });
+        this.canvas.renderAll();
+    }
+
+    // 对象显示隐藏
+    private showHide = (objs: any) => {
+        (objs || []).forEach((r: any) => {
+            r.visible = !r.visible;
+            if (r.text && typeof r.text === 'object') {
+                r.text.visible = !r.text.visible;
+            }
+        });
+
+        this.canvas.renderAll();
     }
 
     /**
@@ -185,12 +310,10 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             {},
             {
                 // 填充色
-                fill: 'transparent',
-                width: 50,
-                height: 50,
+                fill: '#fff',
                 // 边框
                 strokeWidth: 1,
-                stroke: "#880E4F",
+                stroke: "#999",
                 // 圆角
                 // rx: 10,
                 // ry: 10,
@@ -209,7 +332,6 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             option,
         ));
 
-        this.canvas.add(rect);
         return rect;
     }
 
@@ -220,8 +342,6 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             Object.assign(
                 {},
                 {
-                    // 填充色
-                    fill: '',
                     // 边框
                     stroke: 'black',
                     // 禁止四点定位
@@ -234,27 +354,24 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 option
             )
         );
-        this.canvas.add(line);
+
         return line;
     }
 
     // 画文案
-    private drawText(str, option: TextOptions = {}): fabric.Text {
-        var text: fabric.Text = new fabric.Text(`${str}`, Object.assign(
+    private drawText(str: string, option: TextOptions = {}): fabric.Text {
+        var text: fabric.Text = new fabric.Text(str, Object.assign(
             {},
             {
                 // 字体对其方式
-                originX: 'left',
-                originY: 'top',
-                // 定位
-                left: 100,
-                top: 50,
+                // originX: 'left',
+                // originY: 'top',
                 // 字体描边
                 stroke: '#000',
                 // 字体大小
                 fontSize: 12,
                 // 填充色
-                fill: '#000',
+                fill: 'transparent',
                 // 禁止四点定位
                 hasControls: false,
                 // 禁止选中
@@ -264,7 +381,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             },
             option
         ));
-        this.canvas.add(text);
+
         return text;
     }
 }
