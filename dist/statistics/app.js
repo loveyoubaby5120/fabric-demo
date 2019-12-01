@@ -355,327 +355,83 @@ var ServerView = /** @class */ (function (_super) {
                     id: 1,
                     name: 'p1111',
                     subData: [
-                        {
-                            name: 'a1',
-                        },
-                        {
-                            name: 'a2',
-                        },
-                        {
-                            name: 'a3',
-                        },
-                        {
-                            name: 'a4',
-                        },
-                        {
-                            name: 'a5',
-                        },
-                        {
-                            name: 'a6',
-                        },
-                        {
-                            name: 'a7',
-                        },
-                        {
-                            name: 'a8',
-                        },
-                        {
-                            name: 'a9',
-                        },
-                        {
-                            name: 'a10',
-                        },
-                        {
-                            name: 'a11',
-                        },
-                        {
-                            name: 'a12',
-                        },
-                        {
-                            name: 'a13',
-                        },
-                        {
-                            name: 'a14',
-                        },
-                        {
-                            name: 'a15',
-                        },
-                        {
-                            name: 'a16',
-                        },
+                        [
+                            {
+                                name: 'a1',
+                            },
+                            {
+                                name: 'a2',
+                            },
+                            {
+                                name: 'a3',
+                            },
+                            {
+                                name: 'a4',
+                            },
+                            {
+                                name: 'a5',
+                            },
+                            {
+                                name: 'a6',
+                            },
+                            {
+                                name: 'a7',
+                            },
+                            {
+                                name: 'a8',
+                            },
+                        ],
+                        [
+                            {
+                                name: 'a9',
+                            },
+                            {
+                                name: 'a10',
+                            },
+                            {
+                                name: 'a11',
+                            },
+                        ],
+                        [
+                            {
+                                name: 'a12',
+                            },
+                            {
+                                name: 'a13',
+                            },
+                            {
+                                name: 'a14',
+                            },
+                            {
+                                name: 'a15',
+                            },
+                            {
+                                name: 'a16',
+                            },
+                        ],
                     ]
                 },
                 {
                     id: 2,
                     name: 'p2222',
-                    subData: [
-                        {
-                            name: 'a1',
-                        },
-                        {
-                            name: 'a2',
-                        },
-                        {
-                            name: 'a3',
-                        },
-                        {
-                            name: 'a4',
-                        },
-                        {
-                            name: 'a5',
-                        },
-                        {
-                            name: 'a6',
-                        },
-                        {
-                            name: 'a7',
-                        },
-                        {
-                            name: 'a8',
-                        },
-                        {
-                            name: 'a9',
-                        },
-                        {
-                            name: 'a10',
-                        },
-                        {
-                            name: 'a11',
-                        },
-                        {
-                            name: 'a12',
-                        },
-                        {
-                            name: 'a13',
-                        },
-                        {
-                            name: 'a14',
-                        },
-                        {
-                            name: 'a15',
-                        },
-                        {
-                            name: 'a16',
-                        },
-                    ]
                 },
                 {
                     id: 3,
                     name: 'p3333',
-                    subData: [
-                        {
-                            name: 'a1',
-                        },
-                        {
-                            name: 'a2',
-                        },
-                        {
-                            name: 'a3',
-                        },
-                        {
-                            name: 'a4',
-                        },
-                        {
-                            name: 'a5',
-                        },
-                        {
-                            name: 'a6',
-                        },
-                        {
-                            name: 'a7',
-                        },
-                        {
-                            name: 'a8',
-                        },
-                        {
-                            name: 'a9',
-                        },
-                        {
-                            name: 'a10',
-                        },
-                        {
-                            name: 'a11',
-                        },
-                        {
-                            name: 'a12',
-                        },
-                        {
-                            name: 'a13',
-                        },
-                        {
-                            name: 'a14',
-                        },
-                        {
-                            name: 'a15',
-                        },
-                        {
-                            name: 'a16',
-                        },
-                    ]
                 },
             ],
             [
                 {
                     id: 4,
                     name: 'p4444',
-                    subData: [
-                        {
-                            name: 'a1',
-                        },
-                        {
-                            name: 'a2',
-                        },
-                        {
-                            name: 'a3',
-                        },
-                        {
-                            name: 'a4',
-                        },
-                        {
-                            name: 'a5',
-                        },
-                        {
-                            name: 'a6',
-                        },
-                        {
-                            name: 'a7',
-                        },
-                        {
-                            name: 'a8',
-                        },
-                        {
-                            name: 'a9',
-                        },
-                        {
-                            name: 'a10',
-                        },
-                        {
-                            name: 'a11',
-                        },
-                        {
-                            name: 'a12',
-                        },
-                        {
-                            name: 'a13',
-                        },
-                        {
-                            name: 'a14',
-                        },
-                        {
-                            name: 'a15',
-                        },
-                        {
-                            name: 'a16',
-                        },
-                    ]
                 },
                 {
                     id: 5,
                     name: 'p5555',
-                    subData: [
-                        {
-                            name: 'a1',
-                        },
-                        {
-                            name: 'a2',
-                        },
-                        {
-                            name: 'a3',
-                        },
-                        {
-                            name: 'a4',
-                        },
-                        {
-                            name: 'a5',
-                        },
-                        {
-                            name: 'a6',
-                        },
-                        {
-                            name: 'a7',
-                        },
-                        {
-                            name: 'a8',
-                        },
-                        {
-                            name: 'a9',
-                        },
-                        {
-                            name: 'a10',
-                        },
-                        {
-                            name: 'a11',
-                        },
-                        {
-                            name: 'a12',
-                        },
-                        {
-                            name: 'a13',
-                        },
-                        {
-                            name: 'a14',
-                        },
-                        {
-                            name: 'a15',
-                        },
-                        {
-                            name: 'a16',
-                        },
-                    ]
                 },
                 {
                     id: 6,
                     name: 'p6666',
-                    subData: [
-                        {
-                            name: 'a1',
-                        },
-                        {
-                            name: 'a2',
-                        },
-                        {
-                            name: 'a3',
-                        },
-                        {
-                            name: 'a4',
-                        },
-                        {
-                            name: 'a5',
-                        },
-                        {
-                            name: 'a6',
-                        },
-                        {
-                            name: 'a7',
-                        },
-                        {
-                            name: 'a8',
-                        },
-                        {
-                            name: 'a9',
-                        },
-                        {
-                            name: 'a10',
-                        },
-                        {
-                            name: 'a11',
-                        },
-                        {
-                            name: 'a12',
-                        },
-                        {
-                            name: 'a13',
-                        },
-                        {
-                            name: 'a14',
-                        },
-                        {
-                            name: 'a15',
-                        },
-                        {
-                            name: 'a16',
-                        },
-                    ]
                 },
             ],
         ];
@@ -923,7 +679,7 @@ var ServerView = /** @class */ (function (_super) {
             };
             if (open && r.subData && r.subData.length > 0) {
                 // 是否渲染服务器
-                var _a = _this.drawGroup([r.subData], {
+                var _a = _this.drawGroup(r.subData, {
                     width: 20,
                     height: 20,
                     left: options.left + 10,
