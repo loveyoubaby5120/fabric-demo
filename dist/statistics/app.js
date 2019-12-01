@@ -856,10 +856,9 @@ var ServerView = /** @class */ (function (_super) {
         };
         var groups = sourceData.map(function (r, i) {
             var _a = _this.drawObj(r, offset, keys), objGroup = _a.objGroup, objGroupBox = _a.objGroupBox;
-            console.log(objGroupBox);
             offset.top = offset.top + objGroupBox.height + 50;
-            // objGroupBox.width = options.width > objGroupBox.width ? options.width : objGroupBox.width;
-            // objGroupBox.height = options.height > objGroupBox.height ? options.height : objGroupBox.height;
+            groupBox.width = (objGroupBox.sumWidth > groupBox.width ? objGroupBox.sumWidth : groupBox.width) - offset.left / 2;
+            groupBox.height = (objGroupBox.sumHeight > groupBox.height ? objGroupBox.sumHeight : groupBox.height) - offset.top / 2;
             return objGroup;
         });
         return { groups: groups, groupBox: groupBox };
@@ -868,26 +867,41 @@ var ServerView = /** @class */ (function (_super) {
     ServerView.prototype.drawObj = function (sourceGroup, offset, keys) {
         var _this = this;
         var options = __assign({}, offset);
+        // 计算group box的max box
         var objGroupBox = __assign({}, offset, { sumWidth: 0, sumHeight: 0 });
         var objGroup = sourceGroup.map(function (r, i) {
             // 是否展开
             var open = _.findIndex(_this.openCluster, function (oc) { return oc.id === r.id; }) !== -1 && keys.type === 'sourceNode';
             var drawObj = {};
+            // 初始化画框
+            var cluster = _this.drawRect(__assign({}, options, { rx: 10, ry: 10 }));
+            drawObj.cluster = cluster;
             var box = {
-                initWidth: offset.width,
-                initHeight: offset.height,
-                openWidth: 300,
-                openHeight: 300,
+                openWidth: offset.width,
+                openHeight: offset.height,
             };
-            options.width = open ? box.openWidth : box.initWidth;
-            options.height = open ? box.openHeight : box.initHeight;
+            if (open && r.subData && r.subData.length > 0) {
+                // 是否渲染服务器
+                var _a = _this.drawGroup([r.subData], {
+                    width: 20,
+                    height: 20,
+                    left: options.left + 10,
+                    top: options.top + 10,
+                }, { type: 'subNode' }), subsGroup = _a.groups, subsGroupBox = _a.groupBox;
+                box.openWidth = subsGroupBox.width > box.openWidth ? subsGroupBox.width : box.openWidth;
+                box.openHeight = subsGroupBox.height > box.openHeight ? subsGroupBox.height : box.openHeight;
+                options.width = open ? box.openWidth : offset.width;
+                options.height = open ? box.openHeight : offset.height;
+                // 拿到最新值
+                cluster.set(options);
+                // const subsGroup = this.drawSubsRect(r.subData, Object.assign({}, options, { width: 20, height: 20 }), open);
+                drawObj.subsGroup = subsGroup;
+            }
             objGroupBox.width = options.width > objGroupBox.width ? options.width : objGroupBox.width;
             objGroupBox.height = options.height > objGroupBox.height ? options.height : objGroupBox.height;
             objGroupBox.sumWidth = options.left + options.width > objGroupBox.sumWidth ? options.left + options.width : objGroupBox.sumWidth;
             objGroupBox.sumHeight = options.top + options.height > objGroupBox.sumHeight ? options.top + options.height : objGroupBox.sumHeight;
-            var cluster = _this.drawRect(__assign({}, options, { rx: 10, ry: 10 }));
-            drawObj.cluster = cluster;
-            var _a = _this.computeBox(options), titleBox = _a.titleBox, lineBox = _a.lineBox, totalBox = _a.totalBox, labelBox = _a.labelBox;
+            var _b = _this.computeBox(options), titleBox = _b.titleBox, lineBox = _b.lineBox, totalBox = _b.totalBox, labelBox = _b.labelBox;
             if (keys.type === 'sourceNode') {
                 var title = _this.drawText('集群', __assign({}, titleBox, { originX: 'center', originY: 'center', visible: !open }));
                 drawObj.title = title;
@@ -902,19 +916,12 @@ var ServerView = /** @class */ (function (_super) {
             }
             var label = _this.drawText("" + r.name, __assign({}, labelBox, { originX: 'center', originY: 'top' }));
             drawObj.label = label;
-            if (open && r.subData && r.subData.length > 0) {
-                // 是否渲染服务器
-                // const subsGroup = this.drawGroup([r.subData], Object.assign({}, options, { width: 20, height: 20 }), { type: 'subNode' });
-                var subsGroup = _this.drawSubsRect(r.subData, Object.assign({}, options, { width: 20, height: 20 }), open);
-                drawObj.subsGroup = subsGroup;
-            }
             var clusterGroup = new fabric_1.fabric.Group(_.flattenDeep(_.toArray(drawObj)), {
                 // 禁止四点定位
                 hasControls: false,
             });
             clusterGroup.borderColor = 'transparent';
             clusterGroup['open'] = open;
-            clusterGroup['box'] = box;
             clusterGroup['drawObj'] = drawObj;
             clusterGroup['sourceData'] = r;
             clusterGroup['keys'] = keys;
@@ -922,6 +929,8 @@ var ServerView = /** @class */ (function (_super) {
                 _this.canvas.add(clusterGroup);
             }
             options.left = options.left + options.width + 30;
+            options.width = offset.width;
+            options.height = offset.height;
             return clusterGroup;
         });
         return { objGroup: objGroup, objGroupBox: objGroupBox };

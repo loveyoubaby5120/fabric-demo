@@ -496,16 +496,13 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
 
         const groups = sourceData.map((r, i) => {
             const { objGroup, objGroupBox } = this.drawObj(r, offset, keys);
-            console.log(objGroupBox);
             offset.top = offset.top + objGroupBox.height + 50;
 
-            // objGroupBox.width = options.width > objGroupBox.width ? options.width : objGroupBox.width;
-            // objGroupBox.height = options.height > objGroupBox.height ? options.height : objGroupBox.height;
+            groupBox.width = (objGroupBox.sumWidth > groupBox.width ? objGroupBox.sumWidth : groupBox.width) - offset.left / 2;
+            groupBox.height = (objGroupBox.sumHeight > groupBox.height ? objGroupBox.sumHeight : groupBox.height) - offset.top / 2;
 
             return objGroup;
-
         });
-
         return { groups, groupBox };
     }
 
@@ -515,6 +512,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             ...offset
         };
 
+        // 计算group box的max box
         const objGroupBox = {
             ...offset,
             sumWidth: 0,
@@ -526,22 +524,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             const open = _.findIndex(this.openCluster, oc => oc.id === r.id) !== -1 && keys.type === 'sourceNode';
             const drawObj: any = {};
 
-            const box = {
-                initWidth: offset.width,
-                initHeight: offset.height,
-                openWidth: 300,
-                openHeight: 300,
-            };
-
-            options.width = open ? box.openWidth : box.initWidth;
-            options.height = open ? box.openHeight : box.initHeight;
-
-            objGroupBox.width = options.width > objGroupBox.width ? options.width : objGroupBox.width;
-            objGroupBox.height = options.height > objGroupBox.height ? options.height : objGroupBox.height;
-
-            objGroupBox.sumWidth = options.left + options.width > objGroupBox.sumWidth ? options.left + options.width : objGroupBox.sumWidth;
-            objGroupBox.sumHeight = options.top + options.height > objGroupBox.sumHeight ? options.top + options.height : objGroupBox.sumHeight;
-
+            // 初始化画框
             const cluster: fabric.Rect = this.drawRect({
                 ...options,
                 rx: 10,
@@ -549,6 +532,41 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             });
 
             drawObj.cluster = cluster;
+
+            const box = {
+                openWidth: offset.width,
+                openHeight: offset.height,
+            };
+
+            if (open && r.subData && r.subData.length > 0) {
+                // 是否渲染服务器
+                const { groups: subsGroup, groupBox: subsGroupBox } = this.drawGroup(
+                    [r.subData],
+                    {
+                        width: 20,
+                        height: 20,
+                        left: options.left + 10,
+                        top: options.top + 10,
+                    },
+                    { type: 'subNode' },
+                );
+                box.openWidth = subsGroupBox.width > box.openWidth ? subsGroupBox.width : box.openWidth;
+                box.openHeight = subsGroupBox.height > box.openHeight ? subsGroupBox.height : box.openHeight;
+
+                options.width = open ? box.openWidth : offset.width;
+                options.height = open ? box.openHeight : offset.height;
+
+                // 拿到最新值
+                cluster.set(options);
+
+                // const subsGroup = this.drawSubsRect(r.subData, Object.assign({}, options, { width: 20, height: 20 }), open);
+                drawObj.subsGroup = subsGroup;
+            }
+
+            objGroupBox.width = options.width > objGroupBox.width ? options.width : objGroupBox.width;
+            objGroupBox.height = options.height > objGroupBox.height ? options.height : objGroupBox.height;
+            objGroupBox.sumWidth = options.left + options.width > objGroupBox.sumWidth ? options.left + options.width : objGroupBox.sumWidth;
+            objGroupBox.sumHeight = options.top + options.height > objGroupBox.sumHeight ? options.top + options.height : objGroupBox.sumHeight;
 
             const { titleBox, lineBox, totalBox, labelBox } = this.computeBox(options);
             if (keys.type === 'sourceNode') {
@@ -596,13 +614,6 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
 
             drawObj.label = label;
 
-            if (open && r.subData && r.subData.length > 0) {
-                // 是否渲染服务器
-                // const subsGroup = this.drawGroup([r.subData], Object.assign({}, options, { width: 20, height: 20 }), { type: 'subNode' });
-                const subsGroup = this.drawSubsRect(r.subData, Object.assign({}, options, { width: 20, height: 20 }), open);
-                drawObj.subsGroup = subsGroup;
-            }
-
             const clusterGroup = new fabric.Group(_.flattenDeep(_.toArray(drawObj)), {
                 // 禁止四点定位
                 hasControls: false,
@@ -611,7 +622,6 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             clusterGroup.borderColor = 'transparent';
 
             clusterGroup['open'] = open;
-            clusterGroup['box'] = box;
             clusterGroup['drawObj'] = drawObj;
             clusterGroup['sourceData'] = r;
             clusterGroup['keys'] = keys;
@@ -621,6 +631,8 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             }
 
             options.left = options.left + options.width + 30;
+            options.width = offset.width;
+            options.height = offset.height;
 
             return clusterGroup;
         });
