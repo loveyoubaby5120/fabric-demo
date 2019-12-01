@@ -381,7 +381,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
     }
 
     initRender() {
-        this.clusterGroups = this.drawGroup(
+        const { groups } = this.drawGroup(
             this.sourceData,
             {
                 left: 100,
@@ -391,6 +391,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             },
             { type: 'sourceNode' }
         );
+        this.clusterGroups = groups;
         this.linkRect();
     }
 
@@ -484,14 +485,28 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         sourceData: any[],
         offset: IRectOptions,
         keys: { [key: string]: any },
-    ): Array<Array<fabric.Group>> {
-        return sourceData.map((r, i) => {
-            const { clusterGroup, clusterGroupBox } = this.drawObj(r, offset, keys);
-            offset.top = offset.top + clusterGroupBox.height + 50;
+    ): {
+        groups: fabric.Group[][];
+        groupBox: { top?: number, left?: number, height: number, width: number };
+    } {
+        const groupBox = {
+            width: 0,
+            height: 0,
+        };
 
-            return clusterGroup;
+        const groups = sourceData.map((r, i) => {
+            const { objGroup, objGroupBox } = this.drawObj(r, offset, keys);
+            console.log(objGroupBox);
+            offset.top = offset.top + objGroupBox.height + 50;
+
+            // objGroupBox.width = options.width > objGroupBox.width ? options.width : objGroupBox.width;
+            // objGroupBox.height = options.height > objGroupBox.height ? options.height : objGroupBox.height;
+
+            return objGroup;
 
         });
+
+        return { groups, groupBox };
     }
 
     /** 渲染子 */
@@ -500,12 +515,13 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             ...offset
         };
 
-        const clusterGroupBox = {
-            width: 0,
-            height: 0,
+        const objGroupBox = {
+            ...offset,
+            sumWidth: 0,
+            sumHeight: 0,
         };
 
-        const clusterGroup = sourceGroup.map((r, i) => {
+        const objGroup = sourceGroup.map((r, i) => {
             // 是否展开
             const open = _.findIndex(this.openCluster, oc => oc.id === r.id) !== -1 && keys.type === 'sourceNode';
             const drawObj: any = {};
@@ -516,11 +532,15 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 openWidth: 300,
                 openHeight: 300,
             };
+
             options.width = open ? box.openWidth : box.initWidth;
             options.height = open ? box.openHeight : box.initHeight;
 
-            clusterGroupBox.width = options.width > clusterGroupBox.width ? options.width : clusterGroupBox.width;
-            clusterGroupBox.height = options.height > clusterGroupBox.height ? options.height : clusterGroupBox.height;
+            objGroupBox.width = options.width > objGroupBox.width ? options.width : objGroupBox.width;
+            objGroupBox.height = options.height > objGroupBox.height ? options.height : objGroupBox.height;
+
+            objGroupBox.sumWidth = options.left + options.width > objGroupBox.sumWidth ? options.left + options.width : objGroupBox.sumWidth;
+            objGroupBox.sumHeight = options.top + options.height > objGroupBox.sumHeight ? options.top + options.height : objGroupBox.sumHeight;
 
             const cluster: fabric.Rect = this.drawRect({
                 ...options,
@@ -605,7 +625,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             return clusterGroup;
         });
 
-        return { clusterGroup, clusterGroupBox };
+        return { objGroup, objGroupBox };
     }
 
     /** 计算集群 Box */

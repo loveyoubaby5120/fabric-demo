@@ -772,12 +772,13 @@ var ServerView = /** @class */ (function (_super) {
         this.initRender();
     };
     ServerView.prototype.initRender = function () {
-        this.clusterGroups = this.drawGroup(this.sourceData, {
+        var groups = this.drawGroup(this.sourceData, {
             left: 100,
             top: 50,
             width: 100,
             height: 100,
-        }, { type: 'sourceNode' });
+        }, { type: 'sourceNode' }).groups;
+        this.clusterGroups = groups;
         this.linkRect();
     };
     /** 链接关系 */
@@ -849,21 +850,26 @@ var ServerView = /** @class */ (function (_super) {
     /** 渲染组 */
     ServerView.prototype.drawGroup = function (sourceData, offset, keys) {
         var _this = this;
-        return sourceData.map(function (r, i) {
-            var _a = _this.drawObj(r, offset, keys), clusterGroup = _a.clusterGroup, clusterGroupBox = _a.clusterGroupBox;
-            offset.top = offset.top + clusterGroupBox.height + 50;
-            return clusterGroup;
+        var groupBox = {
+            width: 0,
+            height: 0,
+        };
+        var groups = sourceData.map(function (r, i) {
+            var _a = _this.drawObj(r, offset, keys), objGroup = _a.objGroup, objGroupBox = _a.objGroupBox;
+            console.log(objGroupBox);
+            offset.top = offset.top + objGroupBox.height + 50;
+            // objGroupBox.width = options.width > objGroupBox.width ? options.width : objGroupBox.width;
+            // objGroupBox.height = options.height > objGroupBox.height ? options.height : objGroupBox.height;
+            return objGroup;
         });
+        return { groups: groups, groupBox: groupBox };
     };
     /** 渲染子 */
     ServerView.prototype.drawObj = function (sourceGroup, offset, keys) {
         var _this = this;
         var options = __assign({}, offset);
-        var clusterGroupBox = {
-            width: 0,
-            height: 0,
-        };
-        var clusterGroup = sourceGroup.map(function (r, i) {
+        var objGroupBox = __assign({}, offset, { sumWidth: 0, sumHeight: 0 });
+        var objGroup = sourceGroup.map(function (r, i) {
             // 是否展开
             var open = _.findIndex(_this.openCluster, function (oc) { return oc.id === r.id; }) !== -1 && keys.type === 'sourceNode';
             var drawObj = {};
@@ -875,8 +881,10 @@ var ServerView = /** @class */ (function (_super) {
             };
             options.width = open ? box.openWidth : box.initWidth;
             options.height = open ? box.openHeight : box.initHeight;
-            clusterGroupBox.width = options.width > clusterGroupBox.width ? options.width : clusterGroupBox.width;
-            clusterGroupBox.height = options.height > clusterGroupBox.height ? options.height : clusterGroupBox.height;
+            objGroupBox.width = options.width > objGroupBox.width ? options.width : objGroupBox.width;
+            objGroupBox.height = options.height > objGroupBox.height ? options.height : objGroupBox.height;
+            objGroupBox.sumWidth = options.left + options.width > objGroupBox.sumWidth ? options.left + options.width : objGroupBox.sumWidth;
+            objGroupBox.sumHeight = options.top + options.height > objGroupBox.sumHeight ? options.top + options.height : objGroupBox.sumHeight;
             var cluster = _this.drawRect(__assign({}, options, { rx: 10, ry: 10 }));
             drawObj.cluster = cluster;
             var _a = _this.computeBox(options), titleBox = _a.titleBox, lineBox = _a.lineBox, totalBox = _a.totalBox, labelBox = _a.labelBox;
@@ -916,7 +924,7 @@ var ServerView = /** @class */ (function (_super) {
             options.left = options.left + options.width + 30;
             return clusterGroup;
         });
-        return { clusterGroup: clusterGroup, clusterGroupBox: clusterGroupBox };
+        return { objGroup: objGroup, objGroupBox: objGroupBox };
     };
     /** 渲染子集 */
     ServerView.prototype.drawSubsRect = function (data, options, open) {
