@@ -654,8 +654,8 @@ var ServerView = /** @class */ (function (_super) {
         var groups = sourceData.map(function (r, i) {
             var _a = _this.drawObj(r, offset, keys), objGroup = _a.objGroup, objGroupBox = _a.objGroupBox;
             offset.top = offset.top + objGroupBox.height + 50;
-            groupBox.width = (objGroupBox.sumWidth > groupBox.width ? objGroupBox.sumWidth : groupBox.width) - offset.left / 2;
-            groupBox.height = (objGroupBox.sumHeight > groupBox.height ? objGroupBox.sumHeight : groupBox.height) - offset.top / 2;
+            groupBox.width = (objGroupBox.sumWidth > groupBox.width ? objGroupBox.sumWidth : groupBox.width) - offset.width;
+            groupBox.height = objGroupBox.sumHeight > groupBox.height ? objGroupBox.sumHeight : groupBox.height;
             return objGroup;
         });
         return { groups: groups, groupBox: groupBox };
@@ -685,6 +685,7 @@ var ServerView = /** @class */ (function (_super) {
                     left: options.left + 10,
                     top: options.top + 10,
                 }, { type: 'subNode' }), subsGroup = _a.groups, subsGroupBox = _a.groupBox;
+                console.log(subsGroupBox);
                 box.openWidth = subsGroupBox.width > box.openWidth ? subsGroupBox.width : box.openWidth;
                 box.openHeight = subsGroupBox.height > box.openHeight ? subsGroupBox.height : box.openHeight;
                 options.width = open ? box.openWidth : offset.width;

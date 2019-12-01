@@ -294,13 +294,12 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             width: 0,
             height: 0,
         };
-
         const groups = sourceData.map((r, i) => {
             const { objGroup, objGroupBox } = this.drawObj(r, offset, keys);
             offset.top = offset.top + objGroupBox.height + 50;
 
-            groupBox.width = (objGroupBox.sumWidth > groupBox.width ? objGroupBox.sumWidth : groupBox.width) - offset.left / 2;
-            groupBox.height = (objGroupBox.sumHeight > groupBox.height ? objGroupBox.sumHeight : groupBox.height) - offset.top / 2;
+            groupBox.width = (objGroupBox.sumWidth > groupBox.width ? objGroupBox.sumWidth : groupBox.width) - offset.width;
+            groupBox.height = objGroupBox.sumHeight > groupBox.height ? objGroupBox.sumHeight : groupBox.height;
 
             return objGroup;
         });
@@ -351,6 +350,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                     },
                     { type: 'subNode' },
                 );
+                console.log(subsGroupBox);
                 box.openWidth = subsGroupBox.width > box.openWidth ? subsGroupBox.width : box.openWidth;
                 box.openHeight = subsGroupBox.height > box.openHeight ? subsGroupBox.height : box.openHeight;
 
