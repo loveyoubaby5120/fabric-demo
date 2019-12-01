@@ -608,7 +608,6 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 // 拿到最新值
                 cluster.set(options);
 
-                // const subsGroup = this.drawSubsRect(r.subData, Object.assign({}, options, { width: 20, height: 20 }), open);
                 drawObj.subsGroup = subsGroup;
             }
 
@@ -706,42 +705,6 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 top: options.top + options.height + 5,
             },
         };
-    }
-
-    /** 渲染子集 */
-    private drawSubsRect(data: any[], options: IRectOptions, open: boolean) {
-        const subs = data.map((r: any, i: number) => {
-            const config = {
-                top: options.top + 8 + Math.floor(i / 9) * 50,
-                left: options.left + 8 + i % 9 * 30,
-                width: options.width,
-                height: options.height,
-            };
-
-            const rect: fabric.Rect = this.drawRect(config);
-
-            const text = this.drawText(
-                `${r.name}`,
-                {
-                    left: config.left + config.width / 2,
-                    top: config.top + config.height + 5,
-                    originX: 'center',
-                    originY: 'top',
-                },
-            );
-
-            const group: any = new fabric.Group([rect, text]);
-            group['text'] = text;
-            group['sourceData'] = r;
-
-            return group;
-        });
-        const subsGroup: any = new fabric.Group([...subs], {
-            visible: open,
-        });
-        subsGroup['subs'] = subs;
-
-        return subsGroup;
     }
 
     render() {

@@ -935,7 +935,6 @@ var ServerView = /** @class */ (function (_super) {
                 options.height = open ? box.openHeight : offset.height;
                 // 拿到最新值
                 cluster.set(options);
-                // const subsGroup = this.drawSubsRect(r.subData, Object.assign({}, options, { width: 20, height: 20 }), open);
                 drawObj.subsGroup = subsGroup;
             }
             objGroupBox.width = options.width > objGroupBox.width ? options.width : objGroupBox.width;
@@ -975,34 +974,6 @@ var ServerView = /** @class */ (function (_super) {
             return clusterGroup;
         });
         return { objGroup: objGroup, objGroupBox: objGroupBox };
-    };
-    /** 渲染子集 */
-    ServerView.prototype.drawSubsRect = function (data, options, open) {
-        var _this = this;
-        var subs = data.map(function (r, i) {
-            var config = {
-                top: options.top + 8 + Math.floor(i / 9) * 50,
-                left: options.left + 8 + i % 9 * 30,
-                width: options.width,
-                height: options.height,
-            };
-            var rect = _this.drawRect(config);
-            var text = _this.drawText("" + r.name, {
-                left: config.left + config.width / 2,
-                top: config.top + config.height + 5,
-                originX: 'center',
-                originY: 'top',
-            });
-            var group = new fabric_1.fabric.Group([rect, text]);
-            group['text'] = text;
-            group['sourceData'] = r;
-            return group;
-        });
-        var subsGroup = new fabric_1.fabric.Group(subs.slice(), {
-            visible: open,
-        });
-        subsGroup['subs'] = subs;
-        return subsGroup;
     };
     ServerView.prototype.render = function () {
         var _this = this;
