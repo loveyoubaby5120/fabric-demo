@@ -333,6 +333,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var radium_1 = require("~/common/radium");
+var _ = require("lodash");
 var React = require("react");
 var react_router_dom_1 = require("react-router-dom");
 var fabric_1 = require("fabric");
@@ -343,7 +344,52 @@ var ServerView = /** @class */ (function (_super) {
         _this.PROPORTION = { width: 1, height: 1 };
         _this.lastPos = { x: 0, y: 0 };
         _this.drag = false;
-        _this.topRectGroups = [];
+        _this.sourceData = [
+            [
+                {
+                    id: 1,
+                    subData: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                },
+                {
+                    id: 2,
+                    subData: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                },
+                {
+                    id: 3,
+                    subData: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                },
+            ],
+            [
+                {
+                    id: 4,
+                    subData: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                },
+                {
+                    id: 5,
+                    subData: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                },
+                {
+                    id: 6,
+                    subData: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                },
+            ],
+        ];
+        _this.clusterGroups = [];
+        _this.openCluster = [];
+        /** 计算集群 Box */
+        _this.computeBox = function (options) {
+            return {
+                titleBox: {
+                    left: options.left + options.width / 2,
+                    top: options.top + options.height / 2 - 15,
+                },
+                lineBox: "M " + (options.left + 10) + " " + (options.top + options.height / 2) + " L " + (options.left + options.width - 10) + " " + (options.top + options.height / 2),
+                totalBox: {
+                    left: options.left + options.width / 2,
+                    top: options.top + 15 + options.height / 2,
+                },
+            };
+        };
         /** 箭头 */
         _this.drawArrows = function (obj) {
             var fromX = obj.fromX, fromY = obj.fromY, toX = obj.toX, toY = obj.toY, theta = obj.theta, headlen = obj.headlen;
@@ -359,22 +405,48 @@ var ServerView = /** @class */ (function (_super) {
         };
         // 对象显示隐藏
         _this.showHide = function (obj) {
-            obj.set({
-                scaleX: obj.scaleX === 1 ? 3 : 1,
-                scaleY: obj.scaleY === 1 ? 3 : 1,
-            });
-            // 隐藏显示集群信息
-            obj['description'].forEach(function (o) {
-                o.visible = !o.visible;
-                if (o.text && typeof o.text === 'object') {
-                    o.text.visible = !o.text.visible;
-                }
-            });
-            // 隐藏显示服务器
-            obj['subsGroup'].visible = !obj['subsGroup'].visible;
-            // 修正四点定位
-            obj.setCoords();
-            _this.canvas.renderAll();
+            var _a;
+            if (!obj.open) {
+                _this.openCluster.push(obj.sourceData);
+            }
+            else {
+                _.remove(_this.openCluster, function (c) { return c.id === obj.sourceData.id; });
+            }
+            (_a = _this.canvas).remove.apply(_a, _this.canvas.getObjects());
+            _this.drawClusterGroup();
+            // const { cluster, title, line, total, subsGroup } = obj.drawObj;
+            // const box = {
+            //     width: obj.open ? obj.box.initWidth : obj.box.openWidth,
+            //     height: obj.open ? obj.box.initHeight : obj.box.openHeight,
+            // };
+            // 集群
+            // cluster.set(box);
+            // const { titleBox, lineBox, totalBox } = this.computeBox({
+            //     ...box,
+            //     left: cluster.left,
+            //     top: cluster.top,
+            // });
+            // // 集群标题
+            // title.set({
+            //     ...titleBox,
+            //     visible: !title.visible
+            // });
+            // // 中界线
+            // line.set({
+            //     // ...lineBox,
+            //     path: lineBox,
+            //     visible: !line.visible
+            // });
+            // // 服务器数量
+            // total.set({
+            //     ...totalBox,
+            //     visible: !total.visible
+            // });
+            // // 服务器
+            // subsGroup.visible = !subsGroup.visible;
+            // // 修正四点定位
+            // obj.setCoords();
+            // this.canvas.renderAll();
         };
         /**
          * 处理window `resize`事件
@@ -425,17 +497,17 @@ var ServerView = /** @class */ (function (_super) {
         });
         window.addEventListener('resize', this.handleWindowResize);
         this.handleWindowResize();
-        this.drawTopRect();
+        this.drawClusterGroup();
         this.subscriptionEvent();
-        this.linkRect();
+        // this.linkRect();
     };
     /** 链接关系 */
     ServerView.prototype.linkRect = function () {
         var pathString = {
-            fromX: this.topRectGroups[0].left + this.topRectGroups[0].width,
-            fromY: this.topRectGroups[0].top + this.topRectGroups[0].height / 2,
-            toX: this.topRectGroups[1].left,
-            toY: this.topRectGroups[1].top + this.topRectGroups[1].height / 2,
+            fromX: this.clusterGroups[0][0].left + this.clusterGroups[0][0].width,
+            fromY: this.clusterGroups[0][0].top + this.clusterGroups[0][0].height / 2,
+            toX: this.clusterGroups[1][0].left,
+            toY: this.clusterGroups[1][0].top + this.clusterGroups[1][0].height / 2,
             theta: 10,
             headlen: 10,
         };
@@ -459,7 +531,7 @@ var ServerView = /** @class */ (function (_super) {
         var _this = this;
         this.canvas.on({
             'mouse:dblclick': function (e) {
-                if (e.target && e.target['topRect']) {
+                if (e.target && e.target['drawObj']) {
                     _this.showHide(e.target);
                 }
             },
@@ -475,8 +547,8 @@ var ServerView = /** @class */ (function (_super) {
             'mouse:up': function (e) {
                 _this.drag = false;
                 _this.deActiveObject();
-                if (e.target && e.target['topRect']) {
-                    e.target['topRect'].set({
+                if (e.target && e.target['drawObj']) {
+                    e.target['drawObj']['cluster'].set({
                         stroke: 'rgba(255, 255, 0, .4)',
                     });
                     _this.canvas.renderAll();
@@ -496,63 +568,62 @@ var ServerView = /** @class */ (function (_super) {
         });
     };
     /** 渲染顶级框 */
-    ServerView.prototype.drawTopRect = function () {
+    ServerView.prototype.drawClusterGroup = function () {
         var _this = this;
         var offset = {
             left: 100,
             top: 50,
         };
+        this.clusterGroups = this.sourceData.map(function (r, i) {
+            offset.top = offset.top + i * 150;
+            return _this.drawCluster(r, offset);
+        });
+    };
+    /** 渲染集群 */
+    ServerView.prototype.drawCluster = function (sourceGroup, offset) {
+        var _this = this;
         var options = {
             top: offset.top,
             left: offset.left,
-            width: 100,
-            height: 100,
         };
-        this.topRectGroups = [1, 2, 3].map(function (r, i) {
-            options = {
-                // top: offset.top + Math.floor(i / 10) * 50,
-                top: offset.top,
-                left: offset.left + i * 130,
-                width: 100,
-                height: 100,
+        return sourceGroup.map(function (r, i) {
+            var box = {
+                initWidth: 100,
+                initHeight: 100,
+                openWidth: 300,
+                openHeight: 300,
             };
-            var topRect = _this.drawRect(__assign({}, options, { rx: 10, ry: 10 }));
-            var titleText = _this.drawText('集群', {
-                left: options.left + options.width / 2,
-                top: options.top + options.height / 2 - 15,
-                originX: 'center',
-                originY: 'center',
-                visible: true,
-            });
-            var line = _this.drawPath("M " + (options.left + 10) + " " + (options.top + options.height / 2) + " \n                L " + (options.left + options.width - 10) + " " + (options.top + options.height / 2), {
+            var open = _.findIndex(_this.openCluster, function (oc) { return oc.id === r.id; }) !== -1;
+            options.width = open ? box.openWidth : box.initWidth;
+            options.height = open ? box.openHeight : box.initHeight;
+            var cluster = _this.drawRect(__assign({}, options, { rx: 10, ry: 10 }));
+            var _a = _this.computeBox(options), titleBox = _a.titleBox, lineBox = _a.lineBox, totalBox = _a.totalBox;
+            var title = _this.drawText('集群', __assign({}, titleBox, { originX: 'center', originY: 'center', visible: !open }));
+            var line = _this.drawPath(lineBox, {
                 fill: 'transparent',
                 stroke: '#999',
-                visible: true,
+                visible: !open,
             });
-            var numberText = _this.drawText('20', {
-                left: options.left + options.width / 2,
-                top: options.top + 15 + options.height / 2,
-                originX: 'center',
-                originY: 'center',
-                visible: true,
-            });
-            var subsGroup = _this.drawSubsRect(options);
-            var topRectGroup = new fabric_1.fabric.Group([topRect, titleText, line, numberText, subsGroup], {
+            var total = _this.drawText("" + r.id, __assign({}, totalBox, { originX: 'center', originY: 'center', visible: !open }));
+            var subsGroup = _this.drawSubsRect(r.subData, options, open);
+            var clusterGroup = new fabric_1.fabric.Group([cluster, title, line, total, subsGroup], {
                 // 禁止四点定位
                 hasControls: false,
             });
-            topRectGroup.borderColor = 'transparent';
-            topRectGroup['topRect'] = topRect;
-            topRectGroup['description'] = [titleText, line, numberText];
-            topRectGroup['subsGroup'] = subsGroup;
-            _this.canvas.add(topRectGroup);
-            return topRectGroup;
+            clusterGroup.borderColor = 'transparent';
+            clusterGroup['open'] = open;
+            clusterGroup['box'] = box;
+            clusterGroup['drawObj'] = { cluster: cluster, title: title, line: line, total: total, subsGroup: subsGroup };
+            clusterGroup['sourceData'] = r;
+            _this.canvas.add(clusterGroup);
+            options.left = options.left + options.width + 30;
+            return clusterGroup;
         });
     };
-    /** 渲染子集框 */
-    ServerView.prototype.drawSubsRect = function (options) {
+    /** 渲染子集 */
+    ServerView.prototype.drawSubsRect = function (data, options, open) {
         var _this = this;
-        var subs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].map(function (r, i) {
+        var subs = data.map(function (r, i) {
             var top = options.top + 8 + Math.floor(i / 9) * 50;
             var left = options.left + 8 + i % 9 * 30;
             var rect = _this.drawRect({
@@ -567,12 +638,11 @@ var ServerView = /** @class */ (function (_super) {
             });
             var group = new fabric_1.fabric.Group([rect, text]);
             group['text'] = text;
+            group['sourceData'] = r;
             return group;
         });
         var subsgroup = new fabric_1.fabric.Group(subs.slice(), {
-            scaleX: 1 / 3,
-            scaleY: 1 / 3,
-            visible: false
+            visible: open,
         });
         subsgroup['subs'] = subs;
         return subsgroup;
@@ -585,12 +655,12 @@ var ServerView = /** @class */ (function (_super) {
      * 取消高亮对象
      */
     ServerView.prototype.deActiveObject = function () {
-        this.topRectGroups.forEach(function (obj, i) {
-            if (obj['topRect'].set) {
-                obj['topRect'].set({
+        this.clusterGroups.forEach(function (cluster, i) {
+            cluster.forEach(function (obj) {
+                obj['drawObj']['cluster'].set({
                     stroke: '#999',
                 });
-            }
+            });
         });
         this.canvas.renderAll();
     };
@@ -608,9 +678,6 @@ var ServerView = /** @class */ (function (_super) {
             // ry: 10,
             // 旋转
             // angle: 45,
-            // 缩放
-            // scaleX: 3,
-            // scaleY: 3,
             // 禁止四点定位
             hasControls: false,
             // 禁止选中

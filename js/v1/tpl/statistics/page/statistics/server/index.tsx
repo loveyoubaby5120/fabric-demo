@@ -12,7 +12,39 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
     private lastPos: { x: number, y: number } = { x: 0, y: 0 };
     private drag: boolean = false;
 
-    private topRectGroups: Array<fabric.Group> = [];
+    private sourceData: any[][] = [
+        [
+            {
+                id: 1,
+                subData: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+            },
+            {
+                id: 2,
+                subData: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+            },
+            {
+                id: 3,
+                subData: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+            },
+        ],
+        [
+            {
+                id: 4,
+                subData: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+            },
+            {
+                id: 5,
+                subData: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+            },
+            {
+                id: 6,
+                subData: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+            },
+        ],
+    ];
+
+    private clusterGroups: Array<Array<fabric.Group>> = [];
+    private openCluster: any[] = [];
 
     /**
      * 获取文档的大小
@@ -38,13 +70,13 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         });
         window.addEventListener('resize', this.handleWindowResize);
         this.handleWindowResize();
-        this.drawTopRect();
+        this.drawClusterGroup();
         this.subscriptionEvent();
-        this.linkRect();
+        // this.linkRect();
     }
 
     /** 链接关系 */
-    linkRect() {
+    private linkRect() {
         const pathString: {
             fromX: number;
             fromY: number;
@@ -53,10 +85,10 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             theta: number;
             headlen: number;
         } = {
-            fromX: this.topRectGroups[0].left + this.topRectGroups[0].width,
-            fromY: this.topRectGroups[0].top + this.topRectGroups[0].height / 2,
-            toX: this.topRectGroups[1].left,
-            toY: this.topRectGroups[1].top + this.topRectGroups[1].height / 2,
+            fromX: this.clusterGroups[0][0].left + this.clusterGroups[0][0].width,
+            fromY: this.clusterGroups[0][0].top + this.clusterGroups[0][0].height / 2,
+            toX: this.clusterGroups[1][0].left,
+            toY: this.clusterGroups[1][0].top + this.clusterGroups[1][0].height / 2,
             theta: 10,
             headlen: 10,
         };
@@ -86,10 +118,10 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
     /**
      * canvas 事件监听
      */
-    subscriptionEvent() {
+    private subscriptionEvent() {
         this.canvas.on({
             'mouse:dblclick': (e: fabric.IEvent | any) => {
-                if (e.target && e.target['topRect']) {
+                if (e.target && e.target['drawObj']) {
                     this.showHide(e.target);
                 }
             },
@@ -105,8 +137,8 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             'mouse:up': (e: fabric.IEvent | any) => {
                 this.drag = false;
                 this.deActiveObject();
-                if (e.target && e.target['topRect']) {
-                    e.target['topRect'].set({
+                if (e.target && e.target['drawObj']) {
+                    e.target['drawObj']['cluster'].set({
                         stroke: 'rgba(255, 255, 0, .4)',
                     });
                     this.canvas.renderAll();
@@ -129,86 +161,113 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
     }
 
     /** 渲染顶级框 */
-    drawTopRect() {
+    private drawClusterGroup() {
         const offset = {
             left: 100,
             top: 50,
         };
 
-        let options = {
+        this.clusterGroups = this.sourceData.map((r, i) => {
+            offset.top = offset.top + i * 150;
+            return this.drawCluster(r, offset);
+
+        });
+    }
+
+    /** 渲染集群 */
+    private drawCluster(sourceGroup: any[], offset: { left: number; top: number }) {
+        const options: IRectOptions = {
             top: offset.top,
             left: offset.left,
-            width: 100,
-            height: 100,
         };
 
-        this.topRectGroups = [1, 2, 3].map((r, i) => {
-            options = {
-                // top: offset.top + Math.floor(i / 10) * 50,
-                top: offset.top,
-                left: offset.left + i * 130,
-                width: 100,
-                height: 100,
+        return sourceGroup.map((r, i) => {
+            const box = {
+                initWidth: 100,
+                initHeight: 100,
+                openWidth: 300,
+                openHeight: 300,
             };
 
-            const topRect: fabric.Rect = this.drawRect({
+            const open = _.findIndex(this.openCluster, oc => oc.id === r.id) !== -1;
+            options.width = open ? box.openWidth : box.initWidth;
+            options.height = open ? box.openHeight : box.initHeight;
+
+            const cluster: fabric.Rect = this.drawRect({
                 ...options,
                 rx: 10,
                 ry: 10,
             });
+            const { titleBox, lineBox, totalBox } = this.computeBox(options);
 
-            const titleText = this.drawText(
+            const title = this.drawText(
                 '集群',
                 {
-                    left: options.left + options.width / 2,
-                    top: options.top + options.height / 2 - 15,
+                    ...titleBox,
                     originX: 'center',
                     originY: 'center',
-                    visible: true,
+                    visible: !open,
                 },
             );
 
             const line = this.drawPath(
-                `M ${options.left + 10} ${options.top + options.height / 2} 
-                L ${options.left + options.width - 10} ${options.top + options.height / 2}`,
+                lineBox,
                 {
                     fill: 'transparent',
                     stroke: '#999',
-                    visible: true,
+                    visible: !open,
                 },
             );
 
-            const numberText = this.drawText(
-                '20',
+            const total = this.drawText(
+                `${r.id}`,
                 {
-                    left: options.left + options.width / 2,
-                    top: options.top + 15 + options.height / 2,
+                    ...totalBox,
                     originX: 'center',
                     originY: 'center',
-                    visible: true,
+                    visible: !open,
                 },
             );
 
-            const subsGroup = this.drawSubsRect(options);
-            const topRectGroup = new fabric.Group([topRect, titleText, line, numberText, subsGroup], {
+            const subsGroup = this.drawSubsRect(r.subData, options, open);
+            const clusterGroup = new fabric.Group([cluster, title, line, total, subsGroup], {
                 // 禁止四点定位
                 hasControls: false,
             });
 
-            topRectGroup.borderColor = 'transparent';
+            clusterGroup.borderColor = 'transparent';
 
-            topRectGroup['topRect'] = topRect;
-            topRectGroup['description'] = [titleText, line, numberText];
-            topRectGroup['subsGroup'] = subsGroup;
+            clusterGroup['open'] = open;
+            clusterGroup['box'] = box;
+            clusterGroup['drawObj'] = { cluster, title, line, total, subsGroup };
+            clusterGroup['sourceData'] = r;
 
-            this.canvas.add(topRectGroup);
-            return topRectGroup;
+            this.canvas.add(clusterGroup);
+
+            options.left = options.left + options.width + 30;
+
+            return clusterGroup;
         });
     }
 
-    /** 渲染子集框 */
-    drawSubsRect(options: { left: number; top: number; width: number; height: number }) {
-        const subs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].map((r: any, i: number) => {
+    /** 计算集群 Box */
+    private computeBox = (options: IRectOptions) => {
+        return {
+            titleBox: {
+                left: options.left + options.width / 2,
+                top: options.top + options.height / 2 - 15,
+            },
+            lineBox: `M ${options.left + 10} ${options.top + options.height / 2} L ${options.left + options.width - 10} ${options.top + options.height / 2}`,
+            totalBox: {
+                left: options.left + options.width / 2,
+                top: options.top + 15 + options.height / 2,
+            },
+        };
+    }
+
+    /** 渲染子集 */
+    private drawSubsRect(data: any[], options: IRectOptions, open: boolean) {
+        const subs = data.map((r: any, i: number) => {
             let top = options.top + 8 + Math.floor(i / 9) * 50;
             let left = options.left + 8 + i % 9 * 30;
             const rect: fabric.Rect = this.drawRect({
@@ -228,13 +287,12 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
 
             const group: any = new fabric.Group([rect, text]);
             group['text'] = text;
+            group['sourceData'] = r;
 
             return group;
         });
         const subsgroup = new fabric.Group([...subs], {
-            scaleX: 1 / 3,
-            scaleY: 1 / 3,
-            visible: false
+            visible: open,
         });
         subsgroup['subs'] = subs;
 
@@ -276,38 +334,66 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
      * 取消高亮对象
      */
     private deActiveObject() {
-        this.topRectGroups.forEach((obj, i) => {
-            if (obj['topRect'].set) {
-                obj['topRect'].set({
+        this.clusterGroups.forEach((cluster, i) => {
+            cluster.forEach((obj) => {
+                obj['drawObj']['cluster'].set({
                     stroke: '#999',
-                })
-            }
+                });
+            });
         });
         this.canvas.renderAll();
     }
 
     // 对象显示隐藏
     private showHide = (obj: any) => {
-        obj.set({
-            scaleX: obj.scaleX === 1 ? 3 : 1,
-            scaleY: obj.scaleY === 1 ? 3 : 1,
-        });
+        if (!obj.open) {
+            this.openCluster.push(obj.sourceData);
+        } else {
+            _.remove(this.openCluster, (c) => c.id === obj.sourceData.id);
+        }
 
-        // 隐藏显示集群信息
-        obj['description'].forEach((o: any) => {
-            o.visible = !o.visible;
-            if (o.text && typeof o.text === 'object') {
-                o.text.visible = !o.text.visible;
-            }
-        });
+        this.canvas.remove(...this.canvas.getObjects());
+        this.drawClusterGroup();
 
-        // 隐藏显示服务器
-        obj['subsGroup'].visible = !obj['subsGroup'].visible;
+        // const { cluster, title, line, total, subsGroup } = obj.drawObj;
 
-        // 修正四点定位
-        obj.setCoords();
+        // const box = {
+        //     width: obj.open ? obj.box.initWidth : obj.box.openWidth,
+        //     height: obj.open ? obj.box.initHeight : obj.box.openHeight,
+        // };
 
-        this.canvas.renderAll();
+        // 集群
+        // cluster.set(box);
+
+        // const { titleBox, lineBox, totalBox } = this.computeBox({
+        //     ...box,
+        //     left: cluster.left,
+        //     top: cluster.top,
+        // });
+
+        // // 集群标题
+        // title.set({
+        //     ...titleBox,
+        //     visible: !title.visible
+        // });
+        // // 中界线
+        // line.set({
+        //     // ...lineBox,
+        //     path: lineBox,
+        //     visible: !line.visible
+        // });
+        // // 服务器数量
+        // total.set({
+        //     ...totalBox,
+        //     visible: !total.visible
+        // });
+
+        // // 服务器
+        // subsGroup.visible = !subsGroup.visible;
+
+        // // 修正四点定位
+        // obj.setCoords();
+        // this.canvas.renderAll();
     }
 
     /**
@@ -350,9 +436,6 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 // ry: 10,
                 // 旋转
                 // angle: 45,
-                // 缩放
-                // scaleX: 3,
-                // scaleY: 3,
                 // 禁止四点定位
                 hasControls: false,
                 // 禁止选中
