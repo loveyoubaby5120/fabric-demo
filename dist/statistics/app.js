@@ -348,34 +348,334 @@ var ServerView = /** @class */ (function (_super) {
             [
                 {
                     id: 1,
-                    subData: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                    name: 'p1111',
+                    subData: [
+                        {
+                            name: 'a1',
+                        },
+                        {
+                            name: 'a2',
+                        },
+                        {
+                            name: 'a3',
+                        },
+                        {
+                            name: 'a4',
+                        },
+                        {
+                            name: 'a5',
+                        },
+                        {
+                            name: 'a6',
+                        },
+                        {
+                            name: 'a7',
+                        },
+                        {
+                            name: 'a8',
+                        },
+                        {
+                            name: 'a9',
+                        },
+                        {
+                            name: 'a10',
+                        },
+                        {
+                            name: 'a11',
+                        },
+                        {
+                            name: 'a12',
+                        },
+                        {
+                            name: 'a13',
+                        },
+                        {
+                            name: 'a14',
+                        },
+                        {
+                            name: 'a15',
+                        },
+                        {
+                            name: 'a16',
+                        },
+                    ]
                 },
                 {
                     id: 2,
-                    subData: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                    name: 'p2222',
+                    subData: [
+                        {
+                            name: 'a1',
+                        },
+                        {
+                            name: 'a2',
+                        },
+                        {
+                            name: 'a3',
+                        },
+                        {
+                            name: 'a4',
+                        },
+                        {
+                            name: 'a5',
+                        },
+                        {
+                            name: 'a6',
+                        },
+                        {
+                            name: 'a7',
+                        },
+                        {
+                            name: 'a8',
+                        },
+                        {
+                            name: 'a9',
+                        },
+                        {
+                            name: 'a10',
+                        },
+                        {
+                            name: 'a11',
+                        },
+                        {
+                            name: 'a12',
+                        },
+                        {
+                            name: 'a13',
+                        },
+                        {
+                            name: 'a14',
+                        },
+                        {
+                            name: 'a15',
+                        },
+                        {
+                            name: 'a16',
+                        },
+                    ]
                 },
                 {
                     id: 3,
-                    subData: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                    name: 'p3333',
+                    subData: [
+                        {
+                            name: 'a1',
+                        },
+                        {
+                            name: 'a2',
+                        },
+                        {
+                            name: 'a3',
+                        },
+                        {
+                            name: 'a4',
+                        },
+                        {
+                            name: 'a5',
+                        },
+                        {
+                            name: 'a6',
+                        },
+                        {
+                            name: 'a7',
+                        },
+                        {
+                            name: 'a8',
+                        },
+                        {
+                            name: 'a9',
+                        },
+                        {
+                            name: 'a10',
+                        },
+                        {
+                            name: 'a11',
+                        },
+                        {
+                            name: 'a12',
+                        },
+                        {
+                            name: 'a13',
+                        },
+                        {
+                            name: 'a14',
+                        },
+                        {
+                            name: 'a15',
+                        },
+                        {
+                            name: 'a16',
+                        },
+                    ]
                 },
             ],
             [
                 {
                     id: 4,
-                    subData: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                    name: 'p4444',
+                    subData: [
+                        {
+                            name: 'a1',
+                        },
+                        {
+                            name: 'a2',
+                        },
+                        {
+                            name: 'a3',
+                        },
+                        {
+                            name: 'a4',
+                        },
+                        {
+                            name: 'a5',
+                        },
+                        {
+                            name: 'a6',
+                        },
+                        {
+                            name: 'a7',
+                        },
+                        {
+                            name: 'a8',
+                        },
+                        {
+                            name: 'a9',
+                        },
+                        {
+                            name: 'a10',
+                        },
+                        {
+                            name: 'a11',
+                        },
+                        {
+                            name: 'a12',
+                        },
+                        {
+                            name: 'a13',
+                        },
+                        {
+                            name: 'a14',
+                        },
+                        {
+                            name: 'a15',
+                        },
+                        {
+                            name: 'a16',
+                        },
+                    ]
                 },
                 {
                     id: 5,
-                    subData: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                    name: 'p5555',
+                    subData: [
+                        {
+                            name: 'a1',
+                        },
+                        {
+                            name: 'a2',
+                        },
+                        {
+                            name: 'a3',
+                        },
+                        {
+                            name: 'a4',
+                        },
+                        {
+                            name: 'a5',
+                        },
+                        {
+                            name: 'a6',
+                        },
+                        {
+                            name: 'a7',
+                        },
+                        {
+                            name: 'a8',
+                        },
+                        {
+                            name: 'a9',
+                        },
+                        {
+                            name: 'a10',
+                        },
+                        {
+                            name: 'a11',
+                        },
+                        {
+                            name: 'a12',
+                        },
+                        {
+                            name: 'a13',
+                        },
+                        {
+                            name: 'a14',
+                        },
+                        {
+                            name: 'a15',
+                        },
+                        {
+                            name: 'a16',
+                        },
+                    ]
                 },
                 {
                     id: 6,
-                    subData: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                    name: 'p6666',
+                    subData: [
+                        {
+                            name: 'a1',
+                        },
+                        {
+                            name: 'a2',
+                        },
+                        {
+                            name: 'a3',
+                        },
+                        {
+                            name: 'a4',
+                        },
+                        {
+                            name: 'a5',
+                        },
+                        {
+                            name: 'a6',
+                        },
+                        {
+                            name: 'a7',
+                        },
+                        {
+                            name: 'a8',
+                        },
+                        {
+                            name: 'a9',
+                        },
+                        {
+                            name: 'a10',
+                        },
+                        {
+                            name: 'a11',
+                        },
+                        {
+                            name: 'a12',
+                        },
+                        {
+                            name: 'a13',
+                        },
+                        {
+                            name: 'a14',
+                        },
+                        {
+                            name: 'a15',
+                        },
+                        {
+                            name: 'a16',
+                        },
+                    ]
                 },
             ],
         ];
         _this.clusterGroups = [];
-        _this.openCluster = [];
+        _this.openCluster = [{ id: 1 }];
         /** 计算集群 Box */
         _this.computeBox = function (options) {
             return {
@@ -387,6 +687,10 @@ var ServerView = /** @class */ (function (_super) {
                 totalBox: {
                     left: options.left + options.width / 2,
                     top: options.top + 15 + options.height / 2,
+                },
+                labelBox: {
+                    left: options.left + options.width / 2,
+                    top: options.top + options.height + 5,
                 },
             };
         };
@@ -413,40 +717,7 @@ var ServerView = /** @class */ (function (_super) {
                 _.remove(_this.openCluster, function (c) { return c.id === obj.sourceData.id; });
             }
             (_a = _this.canvas).remove.apply(_a, _this.canvas.getObjects());
-            _this.drawClusterGroup();
-            // const { cluster, title, line, total, subsGroup } = obj.drawObj;
-            // const box = {
-            //     width: obj.open ? obj.box.initWidth : obj.box.openWidth,
-            //     height: obj.open ? obj.box.initHeight : obj.box.openHeight,
-            // };
-            // 集群
-            // cluster.set(box);
-            // const { titleBox, lineBox, totalBox } = this.computeBox({
-            //     ...box,
-            //     left: cluster.left,
-            //     top: cluster.top,
-            // });
-            // // 集群标题
-            // title.set({
-            //     ...titleBox,
-            //     visible: !title.visible
-            // });
-            // // 中界线
-            // line.set({
-            //     // ...lineBox,
-            //     path: lineBox,
-            //     visible: !line.visible
-            // });
-            // // 服务器数量
-            // total.set({
-            //     ...totalBox,
-            //     visible: !total.visible
-            // });
-            // // 服务器
-            // subsGroup.visible = !subsGroup.visible;
-            // // 修正四点定位
-            // obj.setCoords();
-            // this.canvas.renderAll();
+            _this.initRender();
         };
         /**
          * 处理window `resize`事件
@@ -497,9 +768,17 @@ var ServerView = /** @class */ (function (_super) {
         });
         window.addEventListener('resize', this.handleWindowResize);
         this.handleWindowResize();
-        this.drawClusterGroup();
         this.subscriptionEvent();
-        // this.linkRect();
+        this.initRender();
+    };
+    ServerView.prototype.initRender = function () {
+        this.clusterGroups = this.drawGroup(this.sourceData, {
+            left: 100,
+            top: 50,
+            width: 100,
+            height: 100,
+        }, { type: 'sourceNode' });
+        this.linkRect();
     };
     /** 链接关系 */
     ServerView.prototype.linkRect = function () {
@@ -567,85 +846,105 @@ var ServerView = /** @class */ (function (_super) {
             },
         });
     };
-    /** 渲染顶级框 */
-    ServerView.prototype.drawClusterGroup = function () {
+    /** 渲染组 */
+    ServerView.prototype.drawGroup = function (sourceData, offset, keys) {
         var _this = this;
-        var offset = {
-            left: 100,
-            top: 50,
-        };
-        this.clusterGroups = this.sourceData.map(function (r, i) {
-            offset.top = offset.top + i * 150;
-            return _this.drawCluster(r, offset);
+        return sourceData.map(function (r, i) {
+            var _a = _this.drawObj(r, offset, keys), clusterGroup = _a.clusterGroup, clusterGroupBox = _a.clusterGroupBox;
+            offset.top = offset.top + clusterGroupBox.height + 50;
+            return clusterGroup;
         });
     };
-    /** 渲染集群 */
-    ServerView.prototype.drawCluster = function (sourceGroup, offset) {
+    /** 渲染子 */
+    ServerView.prototype.drawObj = function (sourceGroup, offset, keys) {
         var _this = this;
-        var options = {
-            top: offset.top,
-            left: offset.left,
+        var options = __assign({}, offset);
+        var clusterGroupBox = {
+            width: 0,
+            height: 0,
         };
-        return sourceGroup.map(function (r, i) {
+        var clusterGroup = sourceGroup.map(function (r, i) {
+            // 是否展开
+            var open = _.findIndex(_this.openCluster, function (oc) { return oc.id === r.id; }) !== -1 && keys.type === 'sourceNode';
+            var drawObj = {};
             var box = {
-                initWidth: 100,
-                initHeight: 100,
+                initWidth: offset.width,
+                initHeight: offset.height,
                 openWidth: 300,
                 openHeight: 300,
             };
-            var open = _.findIndex(_this.openCluster, function (oc) { return oc.id === r.id; }) !== -1;
             options.width = open ? box.openWidth : box.initWidth;
             options.height = open ? box.openHeight : box.initHeight;
+            clusterGroupBox.width = options.width > clusterGroupBox.width ? options.width : clusterGroupBox.width;
+            clusterGroupBox.height = options.height > clusterGroupBox.height ? options.height : clusterGroupBox.height;
             var cluster = _this.drawRect(__assign({}, options, { rx: 10, ry: 10 }));
-            var _a = _this.computeBox(options), titleBox = _a.titleBox, lineBox = _a.lineBox, totalBox = _a.totalBox;
-            var title = _this.drawText('集群', __assign({}, titleBox, { originX: 'center', originY: 'center', visible: !open }));
-            var line = _this.drawPath(lineBox, {
-                fill: 'transparent',
-                stroke: '#999',
-                visible: !open,
-            });
-            var total = _this.drawText("" + r.id, __assign({}, totalBox, { originX: 'center', originY: 'center', visible: !open }));
-            var subsGroup = _this.drawSubsRect(r.subData, options, open);
-            var clusterGroup = new fabric_1.fabric.Group([cluster, title, line, total, subsGroup], {
+            drawObj.cluster = cluster;
+            var _a = _this.computeBox(options), titleBox = _a.titleBox, lineBox = _a.lineBox, totalBox = _a.totalBox, labelBox = _a.labelBox;
+            if (keys.type === 'sourceNode') {
+                var title = _this.drawText('集群', __assign({}, titleBox, { originX: 'center', originY: 'center', visible: !open }));
+                drawObj.title = title;
+                var line = _this.drawPath(lineBox, {
+                    fill: 'transparent',
+                    stroke: '#999',
+                    visible: !open,
+                });
+                drawObj.line = line;
+                var total = _this.drawText("" + r.id, __assign({}, totalBox, { originX: 'center', originY: 'center', visible: !open }));
+                drawObj.total = total;
+            }
+            var label = _this.drawText("" + r.name, __assign({}, labelBox, { originX: 'center', originY: 'top' }));
+            drawObj.label = label;
+            if (open && r.subData && r.subData.length > 0) {
+                // 是否渲染服务器
+                // const subsGroup = this.drawGroup([r.subData], Object.assign({}, options, { width: 20, height: 20 }), { type: 'subNode' });
+                var subsGroup = _this.drawSubsRect(r.subData, Object.assign({}, options, { width: 20, height: 20 }), open);
+                drawObj.subsGroup = subsGroup;
+            }
+            var clusterGroup = new fabric_1.fabric.Group(_.flattenDeep(_.toArray(drawObj)), {
                 // 禁止四点定位
                 hasControls: false,
             });
             clusterGroup.borderColor = 'transparent';
             clusterGroup['open'] = open;
             clusterGroup['box'] = box;
-            clusterGroup['drawObj'] = { cluster: cluster, title: title, line: line, total: total, subsGroup: subsGroup };
+            clusterGroup['drawObj'] = drawObj;
             clusterGroup['sourceData'] = r;
-            _this.canvas.add(clusterGroup);
+            clusterGroup['keys'] = keys;
+            if (keys.type === 'sourceNode') {
+                _this.canvas.add(clusterGroup);
+            }
             options.left = options.left + options.width + 30;
             return clusterGroup;
         });
+        return { clusterGroup: clusterGroup, clusterGroupBox: clusterGroupBox };
     };
     /** 渲染子集 */
     ServerView.prototype.drawSubsRect = function (data, options, open) {
         var _this = this;
         var subs = data.map(function (r, i) {
-            var top = options.top + 8 + Math.floor(i / 9) * 50;
-            var left = options.left + 8 + i % 9 * 30;
-            var rect = _this.drawRect({
-                left: left,
-                top: top,
-                width: 20,
-                height: 20,
-            });
-            var text = _this.drawText("" + r, {
-                left: left,
-                top: top,
+            var config = {
+                top: options.top + 8 + Math.floor(i / 9) * 50,
+                left: options.left + 8 + i % 9 * 30,
+                width: options.width,
+                height: options.height,
+            };
+            var rect = _this.drawRect(config);
+            var text = _this.drawText("" + r.name, {
+                left: config.left + config.width / 2,
+                top: config.top + config.height + 5,
+                originX: 'center',
+                originY: 'top',
             });
             var group = new fabric_1.fabric.Group([rect, text]);
             group['text'] = text;
             group['sourceData'] = r;
             return group;
         });
-        var subsgroup = new fabric_1.fabric.Group(subs.slice(), {
+        var subsGroup = new fabric_1.fabric.Group(subs.slice(), {
             visible: open,
         });
-        subsgroup['subs'] = subs;
-        return subsgroup;
+        subsGroup['subs'] = subs;
+        return subsGroup;
     };
     ServerView.prototype.render = function () {
         return (React.createElement("div", null,

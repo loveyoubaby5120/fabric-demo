@@ -16,35 +16,341 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         [
             {
                 id: 1,
-                subData: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                name: 'p1111',
+                subData: [
+                    {
+                        name: 'a1',
+                    },
+                    {
+                        name: 'a2',
+                    },
+                    {
+                        name: 'a3',
+                    },
+                    {
+                        name: 'a4',
+                    },
+                    {
+                        name: 'a5',
+                    },
+                    {
+                        name: 'a6',
+                    },
+                    {
+                        name: 'a7',
+                    },
+                    {
+                        name: 'a8',
+                    },
+                    {
+                        name: 'a9',
+                    },
+                    {
+                        name: 'a10',
+                    },
+                    {
+                        name: 'a11',
+                    },
+                    {
+                        name: 'a12',
+                    },
+                    {
+                        name: 'a13',
+                    },
+                    {
+                        name: 'a14',
+                    },
+                    {
+                        name: 'a15',
+                    },
+                    {
+                        name: 'a16',
+                    },
+
+                ]
             },
             {
                 id: 2,
-                subData: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                name: 'p2222',
+                subData: [
+                    {
+                        name: 'a1',
+                    },
+                    {
+                        name: 'a2',
+                    },
+                    {
+                        name: 'a3',
+                    },
+                    {
+                        name: 'a4',
+                    },
+                    {
+                        name: 'a5',
+                    },
+                    {
+                        name: 'a6',
+                    },
+                    {
+                        name: 'a7',
+                    },
+                    {
+                        name: 'a8',
+                    },
+                    {
+                        name: 'a9',
+                    },
+                    {
+                        name: 'a10',
+                    },
+                    {
+                        name: 'a11',
+                    },
+                    {
+                        name: 'a12',
+                    },
+                    {
+                        name: 'a13',
+                    },
+                    {
+                        name: 'a14',
+                    },
+                    {
+                        name: 'a15',
+                    },
+                    {
+                        name: 'a16',
+                    },
+
+                ]
             },
             {
                 id: 3,
-                subData: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                name: 'p3333',
+                subData: [
+                    {
+                        name: 'a1',
+                    },
+                    {
+                        name: 'a2',
+                    },
+                    {
+                        name: 'a3',
+                    },
+                    {
+                        name: 'a4',
+                    },
+                    {
+                        name: 'a5',
+                    },
+                    {
+                        name: 'a6',
+                    },
+                    {
+                        name: 'a7',
+                    },
+                    {
+                        name: 'a8',
+                    },
+                    {
+                        name: 'a9',
+                    },
+                    {
+                        name: 'a10',
+                    },
+                    {
+                        name: 'a11',
+                    },
+                    {
+                        name: 'a12',
+                    },
+                    {
+                        name: 'a13',
+                    },
+                    {
+                        name: 'a14',
+                    },
+                    {
+                        name: 'a15',
+                    },
+                    {
+                        name: 'a16',
+                    },
+
+                ]
             },
         ],
         [
             {
                 id: 4,
-                subData: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                name: 'p4444',
+                subData: [
+                    {
+                        name: 'a1',
+                    },
+                    {
+                        name: 'a2',
+                    },
+                    {
+                        name: 'a3',
+                    },
+                    {
+                        name: 'a4',
+                    },
+                    {
+                        name: 'a5',
+                    },
+                    {
+                        name: 'a6',
+                    },
+                    {
+                        name: 'a7',
+                    },
+                    {
+                        name: 'a8',
+                    },
+                    {
+                        name: 'a9',
+                    },
+                    {
+                        name: 'a10',
+                    },
+                    {
+                        name: 'a11',
+                    },
+                    {
+                        name: 'a12',
+                    },
+                    {
+                        name: 'a13',
+                    },
+                    {
+                        name: 'a14',
+                    },
+                    {
+                        name: 'a15',
+                    },
+                    {
+                        name: 'a16',
+                    },
+
+                ]
             },
             {
                 id: 5,
-                subData: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                name: 'p5555',
+                subData: [
+                    {
+                        name: 'a1',
+                    },
+                    {
+                        name: 'a2',
+                    },
+                    {
+                        name: 'a3',
+                    },
+                    {
+                        name: 'a4',
+                    },
+                    {
+                        name: 'a5',
+                    },
+                    {
+                        name: 'a6',
+                    },
+                    {
+                        name: 'a7',
+                    },
+                    {
+                        name: 'a8',
+                    },
+                    {
+                        name: 'a9',
+                    },
+                    {
+                        name: 'a10',
+                    },
+                    {
+                        name: 'a11',
+                    },
+                    {
+                        name: 'a12',
+                    },
+                    {
+                        name: 'a13',
+                    },
+                    {
+                        name: 'a14',
+                    },
+                    {
+                        name: 'a15',
+                    },
+                    {
+                        name: 'a16',
+                    },
+
+                ]
             },
             {
                 id: 6,
-                subData: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                name: 'p6666',
+                subData: [
+                    {
+                        name: 'a1',
+                    },
+                    {
+                        name: 'a2',
+                    },
+                    {
+                        name: 'a3',
+                    },
+                    {
+                        name: 'a4',
+                    },
+                    {
+                        name: 'a5',
+                    },
+                    {
+                        name: 'a6',
+                    },
+                    {
+                        name: 'a7',
+                    },
+                    {
+                        name: 'a8',
+                    },
+                    {
+                        name: 'a9',
+                    },
+                    {
+                        name: 'a10',
+                    },
+                    {
+                        name: 'a11',
+                    },
+                    {
+                        name: 'a12',
+                    },
+                    {
+                        name: 'a13',
+                    },
+                    {
+                        name: 'a14',
+                    },
+                    {
+                        name: 'a15',
+                    },
+                    {
+                        name: 'a16',
+                    },
+
+                ]
             },
         ],
     ];
 
     private clusterGroups: Array<Array<fabric.Group>> = [];
-    private openCluster: any[] = [];
+    private openCluster: any[] = [{ id: 1 }];
 
     /**
      * 获取文档的大小
@@ -70,9 +376,22 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         });
         window.addEventListener('resize', this.handleWindowResize);
         this.handleWindowResize();
-        this.drawClusterGroup();
         this.subscriptionEvent();
-        // this.linkRect();
+        this.initRender();
+    }
+
+    initRender() {
+        this.clusterGroups = this.drawGroup(
+            this.sourceData,
+            {
+                left: 100,
+                top: 50,
+                width: 100,
+                height: 100,
+            },
+            { type: 'sourceNode' }
+        );
+        this.linkRect();
     }
 
     /** 链接关系 */
@@ -160,77 +479,111 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         });
     }
 
-    /** 渲染顶级框 */
-    private drawClusterGroup() {
-        const offset = {
-            left: 100,
-            top: 50,
-        };
+    /** 渲染组 */
+    private drawGroup(
+        sourceData: any[],
+        offset: IRectOptions,
+        keys: { [key: string]: any },
+    ): Array<Array<fabric.Group>> {
+        return sourceData.map((r, i) => {
+            const { clusterGroup, clusterGroupBox } = this.drawObj(r, offset, keys);
+            offset.top = offset.top + clusterGroupBox.height + 50;
 
-        this.clusterGroups = this.sourceData.map((r, i) => {
-            offset.top = offset.top + i * 150;
-            return this.drawCluster(r, offset);
+            return clusterGroup;
 
         });
     }
 
-    /** 渲染集群 */
-    private drawCluster(sourceGroup: any[], offset: { left: number; top: number }) {
+    /** 渲染子 */
+    private drawObj(sourceGroup: any[], offset: IRectOptions, keys: { [key: string]: any }) {
         const options: IRectOptions = {
-            top: offset.top,
-            left: offset.left,
+            ...offset
         };
 
-        return sourceGroup.map((r, i) => {
+        const clusterGroupBox = {
+            width: 0,
+            height: 0,
+        };
+
+        const clusterGroup = sourceGroup.map((r, i) => {
+            // 是否展开
+            const open = _.findIndex(this.openCluster, oc => oc.id === r.id) !== -1 && keys.type === 'sourceNode';
+            const drawObj: any = {};
+
             const box = {
-                initWidth: 100,
-                initHeight: 100,
+                initWidth: offset.width,
+                initHeight: offset.height,
                 openWidth: 300,
                 openHeight: 300,
             };
-
-            const open = _.findIndex(this.openCluster, oc => oc.id === r.id) !== -1;
             options.width = open ? box.openWidth : box.initWidth;
             options.height = open ? box.openHeight : box.initHeight;
+
+            clusterGroupBox.width = options.width > clusterGroupBox.width ? options.width : clusterGroupBox.width;
+            clusterGroupBox.height = options.height > clusterGroupBox.height ? options.height : clusterGroupBox.height;
 
             const cluster: fabric.Rect = this.drawRect({
                 ...options,
                 rx: 10,
                 ry: 10,
             });
-            const { titleBox, lineBox, totalBox } = this.computeBox(options);
 
-            const title = this.drawText(
-                '集群',
+            drawObj.cluster = cluster;
+
+            const { titleBox, lineBox, totalBox, labelBox } = this.computeBox(options);
+            if (keys.type === 'sourceNode') {
+                const title = this.drawText(
+                    '集群',
+                    {
+                        ...titleBox,
+                        originX: 'center',
+                        originY: 'center',
+                        visible: !open,
+                    },
+                );
+                drawObj.title = title;
+
+                const line = this.drawPath(
+                    lineBox,
+                    {
+                        fill: 'transparent',
+                        stroke: '#999',
+                        visible: !open,
+                    },
+                );
+                drawObj.line = line;
+
+                const total = this.drawText(
+                    `${r.id}`,
+                    {
+                        ...totalBox,
+                        originX: 'center',
+                        originY: 'center',
+                        visible: !open,
+                    },
+                );
+                drawObj.total = total;
+            }
+
+            const label = this.drawText(
+                `${r.name}`,
                 {
-                    ...titleBox,
+                    ...labelBox,
                     originX: 'center',
-                    originY: 'center',
-                    visible: !open,
+                    originY: 'top',
                 },
             );
 
-            const line = this.drawPath(
-                lineBox,
-                {
-                    fill: 'transparent',
-                    stroke: '#999',
-                    visible: !open,
-                },
-            );
+            drawObj.label = label;
 
-            const total = this.drawText(
-                `${r.id}`,
-                {
-                    ...totalBox,
-                    originX: 'center',
-                    originY: 'center',
-                    visible: !open,
-                },
-            );
+            if (open && r.subData && r.subData.length > 0) {
+                // 是否渲染服务器
+                // const subsGroup = this.drawGroup([r.subData], Object.assign({}, options, { width: 20, height: 20 }), { type: 'subNode' });
+                const subsGroup = this.drawSubsRect(r.subData, Object.assign({}, options, { width: 20, height: 20 }), open);
+                drawObj.subsGroup = subsGroup;
+            }
 
-            const subsGroup = this.drawSubsRect(r.subData, options, open);
-            const clusterGroup = new fabric.Group([cluster, title, line, total, subsGroup], {
+            const clusterGroup = new fabric.Group(_.flattenDeep(_.toArray(drawObj)), {
                 // 禁止四点定位
                 hasControls: false,
             });
@@ -239,15 +592,20 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
 
             clusterGroup['open'] = open;
             clusterGroup['box'] = box;
-            clusterGroup['drawObj'] = { cluster, title, line, total, subsGroup };
+            clusterGroup['drawObj'] = drawObj;
             clusterGroup['sourceData'] = r;
+            clusterGroup['keys'] = keys;
 
-            this.canvas.add(clusterGroup);
+            if (keys.type === 'sourceNode') {
+                this.canvas.add(clusterGroup);
+            }
 
             options.left = options.left + options.width + 30;
 
             return clusterGroup;
         });
+
+        return { clusterGroup, clusterGroupBox };
     }
 
     /** 计算集群 Box */
@@ -262,26 +620,32 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 left: options.left + options.width / 2,
                 top: options.top + 15 + options.height / 2,
             },
+            labelBox: {
+                left: options.left + options.width / 2,
+                top: options.top + options.height + 5,
+            },
         };
     }
 
     /** 渲染子集 */
     private drawSubsRect(data: any[], options: IRectOptions, open: boolean) {
         const subs = data.map((r: any, i: number) => {
-            let top = options.top + 8 + Math.floor(i / 9) * 50;
-            let left = options.left + 8 + i % 9 * 30;
-            const rect: fabric.Rect = this.drawRect({
-                left,
-                top,
-                width: 20,
-                height: 20,
-            });
+            const config = {
+                top: options.top + 8 + Math.floor(i / 9) * 50,
+                left: options.left + 8 + i % 9 * 30,
+                width: options.width,
+                height: options.height,
+            };
+
+            const rect: fabric.Rect = this.drawRect(config);
 
             const text = this.drawText(
-                `${r}`,
+                `${r.name}`,
                 {
-                    left,
-                    top,
+                    left: config.left + config.width / 2,
+                    top: config.top + config.height + 5,
+                    originX: 'center',
+                    originY: 'top',
                 },
             );
 
@@ -291,12 +655,12 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
 
             return group;
         });
-        const subsgroup = new fabric.Group([...subs], {
+        const subsGroup = new fabric.Group([...subs], {
             visible: open,
         });
-        subsgroup['subs'] = subs;
+        subsGroup['subs'] = subs;
 
-        return subsgroup;
+        return subsGroup;
     }
 
     render() {
@@ -353,47 +717,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         }
 
         this.canvas.remove(...this.canvas.getObjects());
-        this.drawClusterGroup();
-
-        // const { cluster, title, line, total, subsGroup } = obj.drawObj;
-
-        // const box = {
-        //     width: obj.open ? obj.box.initWidth : obj.box.openWidth,
-        //     height: obj.open ? obj.box.initHeight : obj.box.openHeight,
-        // };
-
-        // 集群
-        // cluster.set(box);
-
-        // const { titleBox, lineBox, totalBox } = this.computeBox({
-        //     ...box,
-        //     left: cluster.left,
-        //     top: cluster.top,
-        // });
-
-        // // 集群标题
-        // title.set({
-        //     ...titleBox,
-        //     visible: !title.visible
-        // });
-        // // 中界线
-        // line.set({
-        //     // ...lineBox,
-        //     path: lineBox,
-        //     visible: !line.visible
-        // });
-        // // 服务器数量
-        // total.set({
-        //     ...totalBox,
-        //     visible: !total.visible
-        // });
-
-        // // 服务器
-        // subsGroup.visible = !subsGroup.visible;
-
-        // // 修正四点定位
-        // obj.setCoords();
-        // this.canvas.renderAll();
+        this.initRender();
     }
 
     /**
