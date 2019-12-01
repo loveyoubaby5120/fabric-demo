@@ -89,8 +89,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
     subscriptionEvent() {
         this.canvas.on({
             'mouse:dblclick': (e: fabric.IEvent | any) => {
-                console.log('dblclick ', e);
-                if (e.target && e.target['description']) {
+                if (e.target && e.target['topRect']) {
                     this.showHide(e.target);
                 }
             },
@@ -106,8 +105,8 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             'mouse:up': (e: fabric.IEvent | any) => {
                 this.drag = false;
                 this.deActiveObject();
-                if (e.target && e.target['description']) {
-                    e.target.set({
+                if (e.target && e.target['topRect']) {
+                    e.target['topRect'].set({
                         stroke: 'rgba(255, 255, 0, .4)',
                     });
                     this.canvas.renderAll();
@@ -191,8 +190,14 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             );
 
             const subsGroup = this.drawSubsRect(options);
-            const topRectGroup = new fabric.Group([topRect, titleText, line, numberText, subsGroup]);
+            const topRectGroup = new fabric.Group([topRect, titleText, line, numberText, subsGroup], {
+                // 禁止四点定位
+                hasControls: false,
+            });
 
+            topRectGroup.borderColor = 'transparent';
+
+            topRectGroup['topRect'] = topRect;
             topRectGroup['description'] = [titleText, line, numberText];
             topRectGroup['subsGroup'] = subsGroup;
 
@@ -202,10 +207,10 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
     }
 
     /** 渲染子集框 */
-    drawSubsRect(offset: { left: number; top: number; }) {
+    drawSubsRect(options: { left: number; top: number; width: number; height: number }) {
         const subs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].map((r: any, i: number) => {
-            let top = offset.top + Math.floor(i / 10) * 50;
-            let left = offset.left + i % 10 * 30;
+            let top = options.top + 8 + Math.floor(i / 9) * 50;
+            let left = options.left + 8 + i % 9 * 30;
             const rect: fabric.Rect = this.drawRect({
                 left,
                 top,
@@ -272,8 +277,8 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
      */
     private deActiveObject() {
         this.topRectGroups.forEach((obj, i) => {
-            if (obj.set) {
-                obj.set({
+            if (obj['topRect'].set) {
+                obj['topRect'].set({
                     stroke: '#999',
                 })
             }
@@ -351,7 +356,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 // 禁止四点定位
                 hasControls: false,
                 // 禁止选中
-                // selectable: false,
+                selectable: false,
             },
             option,
         ));

@@ -459,8 +459,7 @@ var ServerView = /** @class */ (function (_super) {
         var _this = this;
         this.canvas.on({
             'mouse:dblclick': function (e) {
-                console.log('dblclick ', e);
-                if (e.target && e.target['description']) {
+                if (e.target && e.target['topRect']) {
                     _this.showHide(e.target);
                 }
             },
@@ -476,8 +475,8 @@ var ServerView = /** @class */ (function (_super) {
             'mouse:up': function (e) {
                 _this.drag = false;
                 _this.deActiveObject();
-                if (e.target && e.target['description']) {
-                    e.target.set({
+                if (e.target && e.target['topRect']) {
+                    e.target['topRect'].set({
                         stroke: 'rgba(255, 255, 0, .4)',
                     });
                     _this.canvas.renderAll();
@@ -538,7 +537,12 @@ var ServerView = /** @class */ (function (_super) {
                 visible: true,
             });
             var subsGroup = _this.drawSubsRect(options);
-            var topRectGroup = new fabric_1.fabric.Group([topRect, titleText, line, numberText, subsGroup]);
+            var topRectGroup = new fabric_1.fabric.Group([topRect, titleText, line, numberText, subsGroup], {
+                // 禁止四点定位
+                hasControls: false,
+            });
+            topRectGroup.borderColor = 'transparent';
+            topRectGroup['topRect'] = topRect;
             topRectGroup['description'] = [titleText, line, numberText];
             topRectGroup['subsGroup'] = subsGroup;
             _this.canvas.add(topRectGroup);
@@ -546,11 +550,11 @@ var ServerView = /** @class */ (function (_super) {
         });
     };
     /** 渲染子集框 */
-    ServerView.prototype.drawSubsRect = function (offset) {
+    ServerView.prototype.drawSubsRect = function (options) {
         var _this = this;
         var subs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].map(function (r, i) {
-            var top = offset.top + Math.floor(i / 10) * 50;
-            var left = offset.left + i % 10 * 30;
+            var top = options.top + 8 + Math.floor(i / 9) * 50;
+            var left = options.left + 8 + i % 9 * 30;
             var rect = _this.drawRect({
                 left: left,
                 top: top,
@@ -582,8 +586,8 @@ var ServerView = /** @class */ (function (_super) {
      */
     ServerView.prototype.deActiveObject = function () {
         this.topRectGroups.forEach(function (obj, i) {
-            if (obj.set) {
-                obj.set({
+            if (obj['topRect'].set) {
+                obj['topRect'].set({
                     stroke: '#999',
                 });
             }
@@ -609,6 +613,8 @@ var ServerView = /** @class */ (function (_super) {
             // scaleY: 3,
             // 禁止四点定位
             hasControls: false,
+            // 禁止选中
+            selectable: false,
         }, option));
         return rect;
     };
