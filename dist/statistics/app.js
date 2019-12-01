@@ -337,13 +337,18 @@ var _ = require("lodash");
 var React = require("react");
 var react_router_dom_1 = require("react-router-dom");
 var fabric_1 = require("fabric");
+var button_1 = require("~/common/antd/button");
 var ServerView = /** @class */ (function (_super) {
     __extends(ServerView, _super);
     function ServerView(props) {
         var _this = _super.call(this, props) || this;
+        // 渲染缩放比例
         _this.PROPORTION = { width: 1, height: 1 };
+        // 拖拽位置
         _this.lastPos = { x: 0, y: 0 };
+        // 是否可拖拽
         _this.drag = false;
+        // 数据
         _this.sourceData = [
             [
                 {
@@ -676,6 +681,61 @@ var ServerView = /** @class */ (function (_super) {
         ];
         _this.clusterGroups = [];
         _this.openCluster = [{ id: 1 }];
+        // 画布缩放比例
+        _this.zoom = 1;
+        _this.max_zoom = 10;
+        _this.min_zoom = 0.1;
+        /**
+         * `mousewheel`事件处理
+         */
+        _this.handleMousewheel = function (e) {
+            var canvas = _this.canvas;
+            var factor = 40;
+            var delta = e.deltaY;
+            var zoom = canvas.getZoom();
+            delta = delta < -factor ? -factor : delta > factor ? factor : delta;
+            zoom = zoom - delta / 200;
+            zoom = Math.max(_this.min_zoom, zoom);
+            zoom = Math.min(_this.max_zoom, zoom);
+            var zoomPoint = new fabric_1.fabric.Point(e.offsetX, e.offsetY);
+            canvas.zoomToPoint(zoomPoint, zoom);
+            _this.zoom = zoom;
+            e.preventDefault();
+            e.stopPropagation();
+        };
+        _this.initRender = function () {
+            var groups = _this.drawGroup(_this.sourceData, {
+                left: 100,
+                top: 50,
+                width: 100,
+                height: 100,
+            }, { type: 'sourceNode' }).groups;
+            _this.clusterGroups = groups;
+            _this.linkRect();
+        };
+        /** 链接关系 */
+        _this.linkRect = function () {
+            var pathString = {
+                fromX: _this.clusterGroups[0][0].left + _this.clusterGroups[0][0].width,
+                fromY: _this.clusterGroups[0][0].top + _this.clusterGroups[0][0].height / 2,
+                toX: _this.clusterGroups[1][0].left,
+                toY: _this.clusterGroups[1][0].top + _this.clusterGroups[1][0].height / 2,
+                theta: 10,
+                headlen: 10,
+            };
+            var arrows = _this.drawArrows(pathString);
+            var arrows2 = _this.drawArrows(Object.assign({}, pathString, {
+                fromX: pathString.toX,
+                fromY: pathString.toY,
+                toX: pathString.fromX,
+                toY: pathString.fromY,
+            }));
+            var path = _this.drawPath(arrows + " \n            M " + pathString.fromX + " " + pathString.fromY + " \n            L " + pathString.toX + " " + pathString.toY + " \n             " + arrows2, {
+                stroke: '#000',
+                strokeWidth: 1,
+            });
+            _this.canvas.add(path);
+        };
         /** 计算集群 Box */
         _this.computeBox = function (options) {
             return {
@@ -770,39 +830,20 @@ var ServerView = /** @class */ (function (_super) {
         this.handleWindowResize();
         this.subscriptionEvent();
         this.initRender();
+        document.getElementById('an').parentNode.addEventListener('mousewheel', this.handleMousewheel);
     };
-    ServerView.prototype.initRender = function () {
-        var groups = this.drawGroup(this.sourceData, {
-            left: 100,
-            top: 50,
-            width: 100,
-            height: 100,
-        }, { type: 'sourceNode' }).groups;
-        this.clusterGroups = groups;
-        this.linkRect();
-    };
-    /** 链接关系 */
-    ServerView.prototype.linkRect = function () {
-        var pathString = {
-            fromX: this.clusterGroups[0][0].left + this.clusterGroups[0][0].width,
-            fromY: this.clusterGroups[0][0].top + this.clusterGroups[0][0].height / 2,
-            toX: this.clusterGroups[1][0].left,
-            toY: this.clusterGroups[1][0].top + this.clusterGroups[1][0].height / 2,
-            theta: 10,
-            headlen: 10,
-        };
-        var arrows = this.drawArrows(pathString);
-        var arrows2 = this.drawArrows(Object.assign({}, pathString, {
-            fromX: pathString.toX,
-            fromY: pathString.toY,
-            toX: pathString.fromX,
-            toY: pathString.fromY,
-        }));
-        var path = this.drawPath(arrows + " \n            M " + pathString.fromX + " " + pathString.fromY + " \n            L " + pathString.toX + " " + pathString.toY + " \n             " + arrows2, {
-            stroke: '#000',
-            strokeWidth: 1,
-        });
-        this.canvas.add(path);
+    /**
+     * 滚轮缩放
+     * @param {Number} dir
+     */
+    ServerView.prototype.zoomInOut = function (dir) {
+        var _a = this.getCanvasSize(), width = _a.width, height = _a.height;
+        var zoom = this.canvas.getZoom() + dir;
+        zoom = Math.max(this.min_zoom, zoom);
+        zoom = Math.min(this.max_zoom, zoom);
+        var zoomPoint = new fabric_1.fabric.Point(width / 2, height / 2);
+        this.canvas.zoomToPoint(zoomPoint, zoom);
+        this.zoom = zoom;
     };
     /**
      * canvas 事件监听
@@ -964,7 +1005,11 @@ var ServerView = /** @class */ (function (_super) {
         return subsGroup;
     };
     ServerView.prototype.render = function () {
+        var _this = this;
         return (React.createElement("div", null,
+            React.createElement(button_1.Button.Group, null,
+                React.createElement(button_1.Button, { icon: 'plus', onClick: function () { return _this.zoomInOut(0.1); } }),
+                React.createElement(button_1.Button, { icon: 'minus', onClick: function () { return _this.zoomInOut(-0.1); } })),
             React.createElement("canvas", { id: 'an' })));
     };
     /**
@@ -1042,6 +1087,15 @@ var ServerView = /** @class */ (function (_super) {
 }(React.Component));
 exports.Server = react_router_dom_1.withRouter(ServerView);
 //# sourceMappingURL=index.js.map
+});
+___scope___.file("common/antd/button.js", function(exports, require, module, __filename, __dirname){
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+require("antd/lib/button/style/css");
+require("~/common/antd/default-style.css");
+exports.Button = require('antd/lib/button');
+//# sourceMappingURL=button.js.map
 });
 return ___scope___.entry = "statistics/index.jsx";
 });

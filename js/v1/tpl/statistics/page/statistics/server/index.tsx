@@ -4,14 +4,21 @@ import * as React from 'react';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
 import { fabric } from 'fabric';
 import { IRectOptions, Point, IPathOptions, TextOptions } from 'fabric/fabric-impl';
+import { Button } from 'common/antd/button';
 
 @Radium
 class ServerView extends React.Component<RouteComponentProps<any>, {}> {
+    // 渲染缩放比例
     private PROPORTION = { width: 1, height: 1 };
+
     private canvas: fabric.Canvas;
+    // 拖拽位置
+
     private lastPos: { x: number, y: number } = { x: 0, y: 0 };
+    // 是否可拖拽
     private drag: boolean = false;
 
+    // 数据
     private sourceData: any[][] = [
         [
             {
@@ -352,6 +359,11 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
     private clusterGroups: Array<Array<fabric.Group>> = [];
     private openCluster: any[] = [{ id: 1 }];
 
+    // 画布缩放比例
+    private zoom: number = 1;
+    private max_zoom: number = 10;
+    private min_zoom: number = 0.1;
+
     /**
      * 获取文档的大小
      */
@@ -378,9 +390,46 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         this.handleWindowResize();
         this.subscriptionEvent();
         this.initRender();
+        document.getElementById('an').parentNode.addEventListener('mousewheel', this.handleMousewheel)
     }
 
-    initRender() {
+    /**
+     * `mousewheel`事件处理
+     */
+    private handleMousewheel = (e: any) => {
+        const { canvas } = this;
+        const factor = 40
+        let delta = e.deltaY;
+        let zoom = canvas.getZoom();
+        delta = delta < -factor ? -factor : delta > factor ? factor : delta
+        zoom = zoom - delta / 200;
+
+        zoom = Math.max(this.min_zoom, zoom);
+        zoom = Math.min(this.max_zoom, zoom);
+        const zoomPoint = new fabric.Point(e.offsetX, e.offsetY);
+
+        canvas.zoomToPoint(zoomPoint, zoom);
+
+        this.zoom = zoom
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    /**
+     * 滚轮缩放
+     * @param {Number} dir
+     */
+    zoomInOut(dir: number) {
+        const { width, height } = this.getCanvasSize();
+        let zoom = this.canvas.getZoom() + dir;
+        zoom = Math.max(this.min_zoom, zoom);
+        zoom = Math.min(this.max_zoom, zoom);
+        const zoomPoint = new fabric.Point(width / 2, height / 2);
+        this.canvas.zoomToPoint(zoomPoint, zoom);
+        this.zoom = zoom;
+    }
+
+    private initRender = () => {
         const { groups } = this.drawGroup(
             this.sourceData,
             {
@@ -396,7 +445,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
     }
 
     /** 链接关系 */
-    private linkRect() {
+    private linkRect = () => {
         const pathString: {
             fromX: number;
             fromY: number;
@@ -614,7 +663,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
 
             drawObj.label = label;
 
-            const clusterGroup = new fabric.Group(_.flattenDeep(_.toArray(drawObj)), {
+            const clusterGroup: any = new fabric.Group(_.flattenDeep(_.toArray(drawObj)), {
                 // 禁止四点定位
                 hasControls: false,
             });
@@ -687,7 +736,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
 
             return group;
         });
-        const subsGroup = new fabric.Group([...subs], {
+        const subsGroup: any = new fabric.Group([...subs], {
             visible: open,
         });
         subsGroup['subs'] = subs;
@@ -698,6 +747,10 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
     render() {
         return (
             <div>
+                <Button.Group>
+                    <Button icon='plus' onClick={() => this.zoomInOut(0.1)} />
+                    <Button icon='minus' onClick={() => this.zoomInOut(-0.1)} />
+                </Button.Group>
                 <canvas id='an'></canvas>
             </div>
         );
@@ -730,8 +783,8 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
      * 取消高亮对象
      */
     private deActiveObject() {
-        this.clusterGroups.forEach((cluster, i) => {
-            cluster.forEach((obj) => {
+        this.clusterGroups.forEach((cluster: any, i) => {
+            cluster.forEach((obj: any) => {
                 obj['drawObj']['cluster'].set({
                     stroke: '#999',
                 });
