@@ -343,7 +343,7 @@ var ServerView = /** @class */ (function (_super) {
         _this.PROPORTION = { width: 1, height: 1 };
         _this.lastPos = { x: 0, y: 0 };
         _this.drag = false;
-        _this.topRect = [];
+        _this.topRectGroups = [];
         /** 箭头 */
         _this.drawArrows = function (obj) {
             var fromX = obj.fromX, fromY = obj.fromY, toX = obj.toX, toY = obj.toY, theta = obj.theta, headlen = obj.headlen;
@@ -358,13 +358,22 @@ var ServerView = /** @class */ (function (_super) {
             return path;
         };
         // 对象显示隐藏
-        _this.showHide = function (objs) {
-            (objs || []).forEach(function (r) {
-                r.visible = !r.visible;
-                if (r.text && typeof r.text === 'object') {
-                    r.text.visible = !r.text.visible;
+        _this.showHide = function (obj) {
+            obj.set({
+                scaleX: obj.scaleX === 1 ? 3 : 1,
+                scaleY: obj.scaleY === 1 ? 3 : 1,
+            });
+            // 隐藏显示集群信息
+            obj['description'].forEach(function (o) {
+                o.visible = !o.visible;
+                if (o.text && typeof o.text === 'object') {
+                    o.text.visible = !o.text.visible;
                 }
             });
+            // 隐藏显示服务器
+            obj['subsGroup'].visible = !obj['subsGroup'].visible;
+            // 修正四点定位
+            obj.setCoords();
             _this.canvas.renderAll();
         };
         /**
@@ -423,10 +432,10 @@ var ServerView = /** @class */ (function (_super) {
     /** 链接关系 */
     ServerView.prototype.linkRect = function () {
         var pathString = {
-            fromX: this.topRect[0].left + this.topRect[0].width,
-            fromY: this.topRect[0].top + this.topRect[0].height / 2,
-            toX: this.topRect[1].left,
-            toY: this.topRect[1].top + this.topRect[1].height / 2,
+            fromX: this.topRectGroups[0].left + this.topRectGroups[0].width,
+            fromY: this.topRectGroups[0].top + this.topRectGroups[0].height / 2,
+            toX: this.topRectGroups[1].left,
+            toY: this.topRectGroups[1].top + this.topRectGroups[1].height / 2,
             theta: 10,
             headlen: 10,
         };
@@ -450,16 +459,9 @@ var ServerView = /** @class */ (function (_super) {
         var _this = this;
         this.canvas.on({
             'mouse:dblclick': function (e) {
-                // console.log('dblclick ', e);
-                if (e.target && e.target['label'] === 'top') {
-                    e.target.set({
-                        scaleX: e.target.scaleX === 1 ? 3 : 1,
-                        scaleY: e.target.scaleY === 1 ? 3 : 1,
-                        hoverCursor: e.target.hoverCursor === 'zoom-out' ? 'zoom-in' : 'zoom-out',
-                    });
-                    _this.showHide(e.target['subs'].concat(e.target['description']));
-                    // 修正四点定位
-                    e.target.setCoords();
+                console.log('dblclick ', e);
+                if (e.target && e.target['description']) {
+                    _this.showHide(e.target);
                 }
             },
             'mouse:down': function (e) {
@@ -467,12 +469,14 @@ var ServerView = /** @class */ (function (_super) {
                     x: e.e.clientX,
                     y: e.e.clientY
                 };
-                _this.drag = true;
+                if (!e.target) {
+                    _this.drag = true;
+                }
             },
             'mouse:up': function (e) {
                 _this.drag = false;
                 _this.deActiveObject();
-                if (e.target && e.target['label'] === 'top') {
+                if (e.target && e.target['description']) {
                     e.target.set({
                         stroke: 'rgba(255, 255, 0, .4)',
                     });
@@ -495,21 +499,25 @@ var ServerView = /** @class */ (function (_super) {
     /** 渲染顶级框 */
     ServerView.prototype.drawTopRect = function () {
         var _this = this;
-        var options = {
-            top: 50,
+        var offset = {
             left: 100,
+            top: 50,
+        };
+        var options = {
+            top: offset.top,
+            left: offset.left,
             width: 100,
             height: 100,
         };
-        this.topRect = [1, 2, 3].map(function (r, i) {
+        this.topRectGroups = [1, 2, 3].map(function (r, i) {
             options = {
-                top: options.top + Math.floor(i / 10) * 50,
-                left: options.left + i % 10 * 130,
+                // top: offset.top + Math.floor(i / 10) * 50,
+                top: offset.top,
+                left: offset.left + i * 130,
                 width: 100,
                 height: 100,
             };
-            var topRect = _this.drawRect(__assign({}, options, { hoverCursor: 'zoom-in' }));
-            topRect['label'] = 'top';
+            var topRect = _this.drawRect(__assign({}, options, { rx: 10, ry: 10 }));
             var titleText = _this.drawText('集群', {
                 left: options.left + options.width / 2,
                 top: options.top + options.height / 2 - 15,
@@ -529,17 +537,18 @@ var ServerView = /** @class */ (function (_super) {
                 originY: 'center',
                 visible: true,
             });
-            topRect['description'] = [titleText, line, numberText];
-            _this.canvas.add(topRect, titleText, line, numberText);
-            var subs = _this.drawSubRect(options);
-            topRect['subs'] = subs;
-            return topRect;
+            var subsGroup = _this.drawSubsRect(options);
+            var topRectGroup = new fabric_1.fabric.Group([topRect, titleText, line, numberText, subsGroup]);
+            topRectGroup['description'] = [titleText, line, numberText];
+            topRectGroup['subsGroup'] = subsGroup;
+            _this.canvas.add(topRectGroup);
+            return topRectGroup;
         });
     };
     /** 渲染子集框 */
-    ServerView.prototype.drawSubRect = function (offset) {
+    ServerView.prototype.drawSubsRect = function (offset) {
         var _this = this;
-        var sub = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].map(function (r, i) {
+        var subs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].map(function (r, i) {
             var top = offset.top + Math.floor(i / 10) * 50;
             var left = offset.left + i % 10 * 30;
             var rect = _this.drawRect({
@@ -547,18 +556,22 @@ var ServerView = /** @class */ (function (_super) {
                 top: top,
                 width: 20,
                 height: 20,
-                visible: false,
             });
             var text = _this.drawText("" + r, {
                 left: left,
                 top: top,
-                visible: false,
             });
-            rect.text = text;
-            _this.canvas.add(rect, text);
-            return rect;
+            var group = new fabric_1.fabric.Group([rect, text]);
+            group['text'] = text;
+            return group;
         });
-        return sub;
+        var subsgroup = new fabric_1.fabric.Group(subs.slice(), {
+            scaleX: 1 / 3,
+            scaleY: 1 / 3,
+            visible: false
+        });
+        subsgroup['subs'] = subs;
+        return subsgroup;
     };
     ServerView.prototype.render = function () {
         return (React.createElement("div", null,
@@ -568,7 +581,7 @@ var ServerView = /** @class */ (function (_super) {
      * 取消高亮对象
      */
     ServerView.prototype.deActiveObject = function () {
-        this.topRect.forEach(function (obj, i) {
+        this.topRectGroups.forEach(function (obj, i) {
             if (obj.set) {
                 obj.set({
                     stroke: '#999',
@@ -587,8 +600,8 @@ var ServerView = /** @class */ (function (_super) {
             strokeWidth: 1,
             stroke: "#999",
             // 圆角
-            rx: 10,
-            ry: 10,
+            // rx: 10,
+            // ry: 10,
             // 旋转
             // angle: 45,
             // 缩放
@@ -596,10 +609,6 @@ var ServerView = /** @class */ (function (_super) {
             // scaleY: 3,
             // 禁止四点定位
             hasControls: false,
-            // 禁止选中
-            selectable: false,
-            // 鼠标样式
-            hoverCursor: 'default',
         }, option));
         return rect;
     };
@@ -614,8 +623,6 @@ var ServerView = /** @class */ (function (_super) {
             hasControls: false,
             // 禁止选中
             selectable: false,
-            // 鼠标样式
-            hoverCursor: 'default',
         }, option));
         return line;
     };
@@ -636,8 +643,6 @@ var ServerView = /** @class */ (function (_super) {
             hasControls: false,
             // 禁止选中
             selectable: false,
-            // 鼠标样式
-            hoverCursor: 'default',
         }, option));
         return text;
     };
