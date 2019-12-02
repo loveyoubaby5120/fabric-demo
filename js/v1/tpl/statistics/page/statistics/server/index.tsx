@@ -116,6 +116,9 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
     private max_zoom: number = 10;
     private min_zoom: number = 0.1;
 
+    // 全屏
+    private fullscreen: boolean = false;
+
     /**
      * 获取文档的大小
      */
@@ -461,14 +464,49 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
 
     render() {
         return (
-            <div>
+            <div id='canvasBox'>
                 <Button.Group>
                     <Button icon='plus' onClick={() => this.zoomInOut(0.1)} />
                     <Button icon='minus' onClick={() => this.zoomInOut(-0.1)} />
                 </Button.Group>
+                <Button icon={this.fullscreen ? 'arrows-alt' : 'shrink'} onClick={() => this.launchFullscreen(document.getElementById('canvasBox'))} />
                 <canvas id='an'></canvas>
             </div>
         );
+    }
+
+    // 全屏模式
+    private launchFullscreen(element: any, ) {
+        if (this.fullscreen) {
+            const doc: any = document;
+
+            if (doc.exitFullscreen) {
+                doc.exitFullscreen();
+            }
+            else if (doc.webkitExitFullscreen) {
+                doc.webkitExitFullscreen();
+            }
+            else if (doc.msExitFullscreen) {
+                doc.msExitFullscreen();
+            }
+            else if (doc.mozCancelFullScreen) {
+                doc.mozCancelFullScreen();
+            }
+            this.fullscreen = false;
+            return;
+        }
+
+        if (element.requestFullscreen) {
+            element.requestFullscreen();
+        } else if (element.mozRequestFullScreen) {
+            element.mozRequestFullScreen();
+        } else if (element.msRequestFullscreen) {
+            element.msRequestFullscreen();
+        } else if (element.webkitRequestFullscreen) {
+            element.webkitRequestFullScreen();
+        }
+
+        this.fullscreen = true;
     }
 
     /** 箭头 */

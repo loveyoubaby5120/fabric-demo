@@ -441,6 +441,8 @@ var ServerView = /** @class */ (function (_super) {
         _this.zoom = 1;
         _this.max_zoom = 10;
         _this.min_zoom = 0.1;
+        // 全屏
+        _this.fullscreen = false;
         /**
          * `mousewheel`事件处理
          */
@@ -734,11 +736,45 @@ var ServerView = /** @class */ (function (_super) {
     };
     ServerView.prototype.render = function () {
         var _this = this;
-        return (React.createElement("div", null,
+        return (React.createElement("div", { id: 'canvasBox' },
             React.createElement(button_1.Button.Group, null,
                 React.createElement(button_1.Button, { icon: 'plus', onClick: function () { return _this.zoomInOut(0.1); } }),
                 React.createElement(button_1.Button, { icon: 'minus', onClick: function () { return _this.zoomInOut(-0.1); } })),
+            React.createElement(button_1.Button, { icon: this.fullscreen ? 'arrows-alt' : 'shrink', onClick: function () { return _this.launchFullscreen(document.getElementById('canvasBox')); } }),
             React.createElement("canvas", { id: 'an' })));
+    };
+    // 全屏模式
+    ServerView.prototype.launchFullscreen = function (element) {
+        if (this.fullscreen) {
+            var doc = document;
+            if (doc.exitFullscreen) {
+                doc.exitFullscreen();
+            }
+            else if (doc.webkitExitFullscreen) {
+                doc.webkitExitFullscreen();
+            }
+            else if (doc.msExitFullscreen) {
+                doc.msExitFullscreen();
+            }
+            else if (doc.mozCancelFullScreen) {
+                doc.mozCancelFullScreen();
+            }
+            this.fullscreen = false;
+            return;
+        }
+        if (element.requestFullscreen) {
+            element.requestFullscreen();
+        }
+        else if (element.mozRequestFullScreen) {
+            element.mozRequestFullScreen();
+        }
+        else if (element.msRequestFullscreen) {
+            element.msRequestFullscreen();
+        }
+        else if (element.webkitRequestFullscreen) {
+            element.webkitRequestFullScreen();
+        }
+        this.fullscreen = true;
     };
     /**
      * 取消高亮对象
