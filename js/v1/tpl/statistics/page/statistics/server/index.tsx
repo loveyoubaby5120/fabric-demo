@@ -3,7 +3,7 @@ import * as _ from 'lodash';
 import * as React from 'react';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
 import { fabric } from 'fabric';
-import { IRectOptions, Point, IPathOptions, TextOptions } from 'fabric/fabric-impl';
+import { IRectOptions, Point, IPathOptions, TextOptions, ITriangleOptions, ILineOptions } from 'fabric/fabric-impl';
 import { Button } from 'common/antd/button';
 
 @Radium
@@ -197,6 +197,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         );
         this.clusterGroups = groups;
         this.linkRect();
+        this.linkRect2();
     }
 
     /** 链接关系 */
@@ -235,8 +236,43 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 strokeWidth: 1,
             }
         );
-
+        console.log(path, path.get('path'));
         this.canvas.add(path);
+    }
+
+    private linkRect2 = () => {
+        const points: number[] = [
+            this.clusterGroups[0][1].left + this.clusterGroups[0][1].width,
+            this.clusterGroups[0][1].top + this.clusterGroups[0][1].height / 2,
+            this.clusterGroups[1][0].left,
+            this.clusterGroups[1][0].top + this.clusterGroups[1][0].height / 2,
+        ];
+
+        const points2: number[] = [
+            this.clusterGroups[1][0].left,
+            this.clusterGroups[1][0].top + this.clusterGroups[1][0].height / 2,
+            this.clusterGroups[0][1].left + this.clusterGroups[0][1].width,
+            this.clusterGroups[0][1].top + this.clusterGroups[0][1].height / 2,
+        ];
+
+        var line = this.drawLine(points, {
+            strokeWidth: 5,
+            stroke: '#7db9e8',
+            originX: 'center',
+            originY: 'center',
+            hasControls: false,
+            hasBorders: false,
+            hasRotatingPoint: false,
+            hoverCursor: 'default',
+            selectable: false;
+        });
+
+        this.canvas.add(line);
+        const triangle = this.createArrowHead(points);
+        const triangle2 = this.createArrowHead(points2);
+        this.canvas.add(triangle);
+        this.canvas.add(triangle2);
+        this.canvas.renderAll();
     }
 
     /**
@@ -281,6 +317,14 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                     this.lastPos.y = e.e.clientY;
                 }
             },
+            'object:moving': (e: fabric.IEvent | any) => {
+                // var p = e.target;
+                // p.line1 && p.line1.set({ 'x2': p.left, 'y2': p.top });
+                // p.line2 && p.line2.set({ 'x1': p.left, 'y1': p.top });
+                // p.line3 && p.line3.set({ 'x1': p.left, 'y1': p.top });
+                // p.line4 && p.line4.set({ 'x1': p.left, 'y1': p.top });
+                // this.canvas.renderAll();
+            }
         });
     }
 
@@ -353,7 +397,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                     },
                     { type: 'subNode' },
                 );
-                console.log(subsGroupBox);
+
                 box.openWidth = subsGroupBox.width > box.openWidth ? subsGroupBox.width : box.openWidth;
                 box.openHeight = subsGroupBox.height > box.openHeight ? subsGroupBox.height : box.openHeight;
 
@@ -532,6 +576,38 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         return path;
     }
 
+    /** 箭头2 */
+    private createArrowHead(points) {
+        var headLength = 15,
+
+            x1 = points[0],
+            y1 = points[1],
+            x2 = points[2],
+            y2 = points[3],
+
+            dx = x2 - x1,
+            dy = y2 - y1,
+
+            angle = Math.atan2(dy, dx);
+
+        angle *= 180 / Math.PI;
+        angle += 90;
+
+        const triangle = this.drawTriangle({
+            angle: angle,
+            fill: '#207cca',
+            top: y2,
+            left: x2,
+            height: headLength,
+            width: headLength,
+            originX: 'center',
+            originY: 'center',
+            selectable: false
+        });
+
+        return triangle;
+    }
+
     /**
      * 取消高亮对象
      */
@@ -609,9 +685,9 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         return rect;
     }
 
-    // 画连接线
+    // 画路径线
     private drawPath(path: string | Point[] = '', option: IPathOptions = {}): fabric.Path {
-        var line: fabric.Path = new fabric.Path(
+        var pathLine: fabric.Path = new fabric.Path(
             path || 'M 65 0 Q 100, 100, 200, 0',
             Object.assign(
                 {},
@@ -628,7 +704,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             )
         );
 
-        return line;
+        return pathLine;
     }
 
     // 画文案
@@ -654,6 +730,56 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         ));
 
         return text;
+    }
+
+    // 画三角形
+    private drawTriangle(option: ITriangleOptions = {}): fabric.Triangle {
+        var line: fabric.Triangle = new fabric.Triangle(
+            Object.assign(
+                {},
+                {
+                    originX: 'center',
+                    originY: 'center',
+                    // 边框
+                    stroke: 'black',
+                    // 禁止四点定位
+                    hasControls: false,
+                    // 禁止选中
+                    selectable: false,
+                    // 鼠标样式
+                },
+                option
+            )
+        );
+
+        return line;
+    }
+
+    // 画线
+    private drawLine(path: number[] = [], option: ILineOptions = {}): fabric.Line {
+        var line: fabric.Line = new fabric.Line(
+            path,
+            Object.assign(
+                {},
+                {
+                    strokeWidth: 5,
+                    originX: 'center',
+                    originY: 'center',
+                    hasBorders: false,
+                    hasRotatingPoint: false,
+                    // 边框
+                    stroke: 'black',
+                    // 禁止四点定位
+                    hasControls: false,
+                    // 禁止选中
+                    selectable: false,
+                    // 鼠标样式
+                },
+                option
+            )
+        );
+
+        return line;
     }
 }
 

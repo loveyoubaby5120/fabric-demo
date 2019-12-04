@@ -470,6 +470,7 @@ var ServerView = /** @class */ (function (_super) {
             }, { type: 'sourceNode' }).groups;
             _this.clusterGroups = groups;
             _this.linkRect();
+            _this.linkRect2();
         };
         /** 链接关系 */
         _this.linkRect = function () {
@@ -492,7 +493,39 @@ var ServerView = /** @class */ (function (_super) {
                 stroke: '#000',
                 strokeWidth: 1,
             });
+            console.log(path, path.get('path'));
             _this.canvas.add(path);
+        };
+        _this.linkRect2 = function () {
+            var points = [
+                _this.clusterGroups[0][1].left + _this.clusterGroups[0][1].width,
+                _this.clusterGroups[0][1].top + _this.clusterGroups[0][1].height / 2,
+                _this.clusterGroups[1][0].left,
+                _this.clusterGroups[1][0].top + _this.clusterGroups[1][0].height / 2,
+            ];
+            var points2 = [
+                _this.clusterGroups[1][0].left,
+                _this.clusterGroups[1][0].top + _this.clusterGroups[1][0].height / 2,
+                _this.clusterGroups[0][1].left + _this.clusterGroups[0][1].width,
+                _this.clusterGroups[0][1].top + _this.clusterGroups[0][1].height / 2,
+            ];
+            var line = _this.drawLine(points, {
+                strokeWidth: 5,
+                stroke: '#7db9e8',
+                originX: 'center',
+                originY: 'center',
+                hasControls: false,
+                hasBorders: false,
+                hasRotatingPoint: false,
+                hoverCursor: 'default',
+                selectable: false
+            });
+            _this.canvas.add(line);
+            var triangle = _this.createArrowHead(points);
+            var triangle2 = _this.createArrowHead(points2);
+            _this.canvas.add(triangle);
+            _this.canvas.add(triangle2);
+            _this.canvas.renderAll();
         };
         /** 计算集群 Box */
         _this.computeBox = function (options) {
@@ -644,6 +677,14 @@ var ServerView = /** @class */ (function (_super) {
                     _this.lastPos.y = e.e.clientY;
                 }
             },
+            'object:moving': function (e) {
+                // var p = e.target;
+                // p.line1 && p.line1.set({ 'x2': p.left, 'y2': p.top });
+                // p.line2 && p.line2.set({ 'x1': p.left, 'y1': p.top });
+                // p.line3 && p.line3.set({ 'x1': p.left, 'y1': p.top });
+                // p.line4 && p.line4.set({ 'x1': p.left, 'y1': p.top });
+                // this.canvas.renderAll();
+            }
         });
     };
     /** 渲染组 */
@@ -687,7 +728,6 @@ var ServerView = /** @class */ (function (_super) {
                     left: options.left + 10,
                     top: options.top + 10,
                 }, { type: 'subNode' }), subsGroup = _a.groups, subsGroupBox = _a.groupBox;
-                console.log(subsGroupBox);
                 box.openWidth = subsGroupBox.width > box.openWidth ? subsGroupBox.width : box.openWidth;
                 box.openHeight = subsGroupBox.height > box.openHeight ? subsGroupBox.height : box.openHeight;
                 options.width = open ? box.openWidth : offset.width;
@@ -776,6 +816,24 @@ var ServerView = /** @class */ (function (_super) {
         }
         this.fullscreen = true;
     };
+    /** 箭头2 */
+    ServerView.prototype.createArrowHead = function (points) {
+        var headLength = 15, x1 = points[0], y1 = points[1], x2 = points[2], y2 = points[3], dx = x2 - x1, dy = y2 - y1, angle = Math.atan2(dy, dx);
+        angle *= 180 / Math.PI;
+        angle += 90;
+        var triangle = this.drawTriangle({
+            angle: angle,
+            fill: '#207cca',
+            top: y2,
+            left: x2,
+            height: headLength,
+            width: headLength,
+            originX: 'center',
+            originY: 'center',
+            selectable: false
+        });
+        return triangle;
+    };
     /**
      * 取消高亮对象
      */
@@ -810,11 +868,11 @@ var ServerView = /** @class */ (function (_super) {
         }, option));
         return rect;
     };
-    // 画连接线
+    // 画路径线
     ServerView.prototype.drawPath = function (path, option) {
         if (path === void 0) { path = ''; }
         if (option === void 0) { option = {}; }
-        var line = new fabric_1.fabric.Path(path || 'M 65 0 Q 100, 100, 200, 0', Object.assign({}, {
+        var pathLine = new fabric_1.fabric.Path(path || 'M 65 0 Q 100, 100, 200, 0', Object.assign({}, {
             // 边框
             stroke: 'black',
             // 禁止四点定位
@@ -822,7 +880,7 @@ var ServerView = /** @class */ (function (_super) {
             // 禁止选中
             selectable: false,
         }, option));
-        return line;
+        return pathLine;
     };
     // 画文案
     ServerView.prototype.drawText = function (str, option) {
@@ -843,6 +901,40 @@ var ServerView = /** @class */ (function (_super) {
             selectable: false,
         }, option));
         return text;
+    };
+    // 画三角形
+    ServerView.prototype.drawTriangle = function (option) {
+        if (option === void 0) { option = {}; }
+        var line = new fabric_1.fabric.Triangle(Object.assign({}, {
+            originX: 'center',
+            originY: 'center',
+            // 边框
+            stroke: 'black',
+            // 禁止四点定位
+            hasControls: false,
+            // 禁止选中
+            selectable: false,
+        }, option));
+        return line;
+    };
+    // 画线
+    ServerView.prototype.drawLine = function (path, option) {
+        if (path === void 0) { path = []; }
+        if (option === void 0) { option = {}; }
+        var line = new fabric_1.fabric.Line(path, Object.assign({}, {
+            strokeWidth: 5,
+            originX: 'center',
+            originY: 'center',
+            hasBorders: false,
+            hasRotatingPoint: false,
+            // 边框
+            stroke: 'black',
+            // 禁止四点定位
+            hasControls: false,
+            // 禁止选中
+            selectable: false,
+        }, option));
+        return line;
     };
     ServerView = __decorate([
         radium_1.Radium
