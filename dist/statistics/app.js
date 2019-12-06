@@ -469,63 +469,38 @@ var ServerView = /** @class */ (function (_super) {
                 height: 100,
             }, { type: 'sourceNode' }).groups;
             _this.clusterGroups = groups;
-            _this.linkRect();
-            _this.linkRect2();
+            _this.linkObj(_this.clusterGroups[0][0], _this.clusterGroups[1][0]);
         };
-        /** 链接关系 */
-        _this.linkRect = function () {
-            var pathString = {
-                fromX: _this.clusterGroups[0][0].left + _this.clusterGroups[0][0].width,
-                fromY: _this.clusterGroups[0][0].top + _this.clusterGroups[0][0].height / 2,
-                toX: _this.clusterGroups[1][0].left,
-                toY: _this.clusterGroups[1][0].top + _this.clusterGroups[1][0].height / 2,
-                theta: 10,
-                headlen: 10,
+        /** 创建链接关系 */
+        _this.linkObj = function (fromObj, toObj) {
+            var pathConfig = {
+                fromX: fromObj.left + fromObj.width,
+                fromY: fromObj.top + _this.clusterGroups[0][0].height / 2,
+                toX: toObj.left + toObj.width,
+                toY: toObj.top + toObj.height / 2,
             };
-            var arrows = _this.drawArrows(pathString);
-            var arrows2 = _this.drawArrows(Object.assign({}, pathString, {
-                fromX: pathString.toX,
-                fromY: pathString.toY,
-                toX: pathString.fromX,
-                toY: pathString.fromY,
-            }));
-            var path = _this.drawPath(arrows + " \n            M " + pathString.fromX + " " + pathString.fromY + " \n            L " + pathString.toX + " " + pathString.toY + " \n             " + arrows2, {
+            var path = _this.drawPath(_this.linkPath(pathConfig).join(' '), {
+                fill: '#000',
                 stroke: '#000',
                 strokeWidth: 1,
             });
-            console.log(path, path.get('path'));
+            path.objs = {
+                fromObj: fromObj,
+                toObj: toObj,
+            };
+            if (!fromObj.paths) {
+                fromObj.paths = [path];
+            }
+            else {
+                fromObj.paths.push(path);
+            }
+            if (!toObj.paths) {
+                toObj.paths = [path];
+            }
+            else {
+                toObj.paths.push(path);
+            }
             _this.canvas.add(path);
-        };
-        _this.linkRect2 = function () {
-            var points = [
-                _this.clusterGroups[0][1].left + _this.clusterGroups[0][1].width,
-                _this.clusterGroups[0][1].top + _this.clusterGroups[0][1].height / 2,
-                _this.clusterGroups[1][0].left,
-                _this.clusterGroups[1][0].top + _this.clusterGroups[1][0].height / 2,
-            ];
-            var points2 = [
-                _this.clusterGroups[1][0].left,
-                _this.clusterGroups[1][0].top + _this.clusterGroups[1][0].height / 2,
-                _this.clusterGroups[0][1].left + _this.clusterGroups[0][1].width,
-                _this.clusterGroups[0][1].top + _this.clusterGroups[0][1].height / 2,
-            ];
-            var line = _this.drawLine(points, {
-                strokeWidth: 5,
-                stroke: '#7db9e8',
-                originX: 'center',
-                originY: 'center',
-                hasControls: false,
-                hasBorders: false,
-                hasRotatingPoint: false,
-                hoverCursor: 'default',
-                selectable: false
-            });
-            _this.canvas.add(line);
-            var triangle = _this.createArrowHead(points);
-            var triangle2 = _this.createArrowHead(points2);
-            _this.canvas.add(triangle);
-            _this.canvas.add(triangle2);
-            _this.canvas.renderAll();
         };
         /** 计算集群 Box */
         _this.computeBox = function (options) {
@@ -545,6 +520,24 @@ var ServerView = /** @class */ (function (_super) {
                 },
             };
         };
+        /** 链接线 */
+        _this.linkPath = function (pathFromAndTo) {
+            var pathConfig = Object.assign({}, pathFromAndTo, {
+                theta: 10,
+                headlen: 10,
+            });
+            var arrows = _this.drawArrows(pathConfig);
+            var arrows2 = _this.drawArrows(Object.assign({}, pathConfig, {
+                fromX: pathConfig.toX,
+                fromY: pathConfig.toY,
+                toX: pathConfig.fromX,
+                toY: pathConfig.fromY,
+            }));
+            return arrows.concat([
+                "M " + pathConfig.fromX + " " + pathConfig.fromY,
+                "L " + pathConfig.toX + " " + pathConfig.toY
+            ], arrows2);
+        };
         /** 箭头 */
         _this.drawArrows = function (obj) {
             var fromX = obj.fromX, fromY = obj.fromY, toX = obj.toX, toY = obj.toY, theta = obj.theta, headlen = obj.headlen;
@@ -555,8 +548,11 @@ var ServerView = /** @class */ (function (_super) {
             var topY = headlen * Math.sin(angle1);
             var botX = headlen * Math.cos(angle2);
             var botY = headlen * Math.sin(angle2);
-            var path = "\n            M " + (toX + topX) + " " + (toY + topY) + " \n            L " + toX + " " + toY + " \n            L " + (toX + botX) + " " + (toY + botY) + "\n        ";
-            return path;
+            return [
+                "M " + (toX + topX) + " " + (toY + topY),
+                "L " + toX + " " + toY,
+                "L " + (toX + botX) + " " + (toY + botY),
+            ];
         };
         // 对象显示隐藏
         _this.showHide = function (obj) {
@@ -655,16 +651,22 @@ var ServerView = /** @class */ (function (_super) {
                 if (!e.target) {
                     _this.drag = true;
                 }
-            },
-            'mouse:up': function (e) {
-                _this.drag = false;
                 _this.deActiveObject();
                 if (e.target && e.target['drawObj']) {
                     e.target['drawObj']['cluster'].set({
                         stroke: 'rgba(255, 255, 0, .4)',
                     });
+                    (e.target.paths || []).forEach(function (path) {
+                        path.set({
+                            fill: 'rgba(0, 0, 255, 0.4)',
+                            stroke: 'rgba(0, 0, 255, 0.4)',
+                        });
+                    });
                     _this.canvas.renderAll();
                 }
+            },
+            'mouse:up': function (e) {
+                _this.drag = false;
             },
             'mouse:move': function (e) {
                 if (_this.drag) {
@@ -678,12 +680,20 @@ var ServerView = /** @class */ (function (_super) {
                 }
             },
             'object:moving': function (e) {
-                // var p = e.target;
-                // p.line1 && p.line1.set({ 'x2': p.left, 'y2': p.top });
-                // p.line2 && p.line2.set({ 'x1': p.left, 'y1': p.top });
-                // p.line3 && p.line3.set({ 'x1': p.left, 'y1': p.top });
-                // p.line4 && p.line4.set({ 'x1': p.left, 'y1': p.top });
-                // this.canvas.renderAll();
+                (e.target.paths || []).forEach(function (path) {
+                    var _a = path.objs, fromObj = _a.fromObj, toObj = _a.toObj;
+                    var pathConfig = {
+                        fromX: fromObj.left + fromObj.width,
+                        fromY: fromObj.top + _this.clusterGroups[0][0].height / 2,
+                        toX: toObj.left + toObj.width,
+                        toY: toObj.top + toObj.height / 2,
+                    };
+                    var pathObject = new fabric_1.fabric.Path(_this.linkPath(pathConfig).join(' '));
+                    path.set({
+                        'path': pathObject.path,
+                    });
+                });
+                _this.canvas.renderAll();
             }
         });
     };
@@ -816,24 +826,6 @@ var ServerView = /** @class */ (function (_super) {
         }
         this.fullscreen = true;
     };
-    /** 箭头2 */
-    ServerView.prototype.createArrowHead = function (points) {
-        var headLength = 15, x1 = points[0], y1 = points[1], x2 = points[2], y2 = points[3], dx = x2 - x1, dy = y2 - y1, angle = Math.atan2(dy, dx);
-        angle *= 180 / Math.PI;
-        angle += 90;
-        var triangle = this.drawTriangle({
-            angle: angle,
-            fill: '#207cca',
-            top: y2,
-            left: x2,
-            height: headLength,
-            width: headLength,
-            originX: 'center',
-            originY: 'center',
-            selectable: false
-        });
-        return triangle;
-    };
     /**
      * 取消高亮对象
      */
@@ -842,6 +834,12 @@ var ServerView = /** @class */ (function (_super) {
             cluster.forEach(function (obj) {
                 obj['drawObj']['cluster'].set({
                     stroke: '#999',
+                });
+                (obj.paths || []).forEach(function (path) {
+                    path.set({
+                        fill: '#000',
+                        stroke: '#000',
+                    });
                 });
             });
         });
@@ -878,7 +876,11 @@ var ServerView = /** @class */ (function (_super) {
             // 禁止四点定位
             hasControls: false,
             // 禁止选中
-            selectable: false,
+            // selectable: false,
+            // 禁用缓存
+            objectCaching: false,
+            // 禁用事件
+            evented: false,
         }, option));
         return pathLine;
     };
@@ -901,40 +903,6 @@ var ServerView = /** @class */ (function (_super) {
             selectable: false,
         }, option));
         return text;
-    };
-    // 画三角形
-    ServerView.prototype.drawTriangle = function (option) {
-        if (option === void 0) { option = {}; }
-        var line = new fabric_1.fabric.Triangle(Object.assign({}, {
-            originX: 'center',
-            originY: 'center',
-            // 边框
-            stroke: 'black',
-            // 禁止四点定位
-            hasControls: false,
-            // 禁止选中
-            selectable: false,
-        }, option));
-        return line;
-    };
-    // 画线
-    ServerView.prototype.drawLine = function (path, option) {
-        if (path === void 0) { path = []; }
-        if (option === void 0) { option = {}; }
-        var line = new fabric_1.fabric.Line(path, Object.assign({}, {
-            strokeWidth: 5,
-            originX: 'center',
-            originY: 'center',
-            hasBorders: false,
-            hasRotatingPoint: false,
-            // 边框
-            stroke: 'black',
-            // 禁止四点定位
-            hasControls: false,
-            // 禁止选中
-            selectable: false,
-        }, option));
-        return line;
     };
     ServerView = __decorate([
         radium_1.Radium

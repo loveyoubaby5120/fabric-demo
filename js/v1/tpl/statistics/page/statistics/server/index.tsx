@@ -196,83 +196,46 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             { type: 'sourceNode' }
         );
         this.clusterGroups = groups;
-        this.linkRect();
-        this.linkRect2();
+
+        this.linkObj(this.clusterGroups[0][0], this.clusterGroups[1][0]);
     }
 
-    /** 链接关系 */
-    private linkRect = () => {
-        const pathString: {
-            fromX: number;
-            fromY: number;
-            toX: number;
-            toY: number;
-            theta: number;
-            headlen: number;
-        } = {
-            fromX: this.clusterGroups[0][0].left + this.clusterGroups[0][0].width,
-            fromY: this.clusterGroups[0][0].top + this.clusterGroups[0][0].height / 2,
-            toX: this.clusterGroups[1][0].left,
-            toY: this.clusterGroups[1][0].top + this.clusterGroups[1][0].height / 2,
-            theta: 10,
-            headlen: 10,
+    /** 创建链接关系 */
+    private linkObj = (fromObj: any, toObj: any) => {
+        const pathConfig = {
+            fromX: fromObj.left + fromObj.width,
+            fromY: fromObj.top + this.clusterGroups[0][0].height / 2,
+            toX: toObj.left + toObj.width,
+            toY: toObj.top + toObj.height / 2,
         };
 
-        const arrows = this.drawArrows(pathString);
-        const arrows2 = this.drawArrows(Object.assign({}, pathString, {
-            fromX: pathString.toX,
-            fromY: pathString.toY,
-            toX: pathString.fromX,
-            toY: pathString.fromY,
-        }));
-
-        const path = this.drawPath(
-            `${arrows} 
-            M ${pathString.fromX} ${pathString.fromY} 
-            L ${pathString.toX} ${pathString.toY} 
-             ${arrows2}`,
+        const path: any = this.drawPath(
+            this.linkPath(pathConfig).join(' '),
             {
+                fill: '#000',
                 stroke: '#000',
                 strokeWidth: 1,
             }
         );
-        console.log(path, path.get('path'));
+
+        path.objs = {
+            fromObj,
+            toObj,
+        };
+
+        if (!fromObj.paths) {
+            fromObj.paths = [path];
+        } else {
+            fromObj.paths.push(path);
+        }
+
+        if (!toObj.paths) {
+            toObj.paths = [path];
+        } else {
+            toObj.paths.push(path);
+        }
+
         this.canvas.add(path);
-    }
-
-    private linkRect2 = () => {
-        const points: number[] = [
-            this.clusterGroups[0][1].left + this.clusterGroups[0][1].width,
-            this.clusterGroups[0][1].top + this.clusterGroups[0][1].height / 2,
-            this.clusterGroups[1][0].left,
-            this.clusterGroups[1][0].top + this.clusterGroups[1][0].height / 2,
-        ];
-
-        const points2: number[] = [
-            this.clusterGroups[1][0].left,
-            this.clusterGroups[1][0].top + this.clusterGroups[1][0].height / 2,
-            this.clusterGroups[0][1].left + this.clusterGroups[0][1].width,
-            this.clusterGroups[0][1].top + this.clusterGroups[0][1].height / 2,
-        ];
-
-        var line = this.drawLine(points, {
-            strokeWidth: 5,
-            stroke: '#7db9e8',
-            originX: 'center',
-            originY: 'center',
-            hasControls: false,
-            hasBorders: false,
-            hasRotatingPoint: false,
-            hoverCursor: 'default',
-            selectable: false;
-        });
-
-        this.canvas.add(line);
-        const triangle = this.createArrowHead(points);
-        const triangle2 = this.createArrowHead(points2);
-        this.canvas.add(triangle);
-        this.canvas.add(triangle2);
-        this.canvas.renderAll();
     }
 
     /**
@@ -293,16 +256,22 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 if (!e.target) {
                     this.drag = true;
                 }
-            },
-            'mouse:up': (e: fabric.IEvent | any) => {
-                this.drag = false;
                 this.deActiveObject();
                 if (e.target && e.target['drawObj']) {
                     e.target['drawObj']['cluster'].set({
                         stroke: 'rgba(255, 255, 0, .4)',
                     });
+                    (e.target.paths || []).forEach((path: any) => {
+                        path.set({
+                            fill: 'rgba(0, 0, 255, 0.4)',
+                            stroke: 'rgba(0, 0, 255, 0.4)',
+                        });
+                    });
                     this.canvas.renderAll();
                 }
+            },
+            'mouse:up': (e: fabric.IEvent | any) => {
+                this.drag = false;
             },
             'mouse:move': (e: fabric.IEvent | any) => {
                 if (this.drag) {
@@ -318,12 +287,22 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 }
             },
             'object:moving': (e: fabric.IEvent | any) => {
-                // var p = e.target;
-                // p.line1 && p.line1.set({ 'x2': p.left, 'y2': p.top });
-                // p.line2 && p.line2.set({ 'x1': p.left, 'y1': p.top });
-                // p.line3 && p.line3.set({ 'x1': p.left, 'y1': p.top });
-                // p.line4 && p.line4.set({ 'x1': p.left, 'y1': p.top });
-                // this.canvas.renderAll();
+                (e.target.paths || []).forEach((path: any) => {
+                    const { fromObj, toObj } = path.objs;
+                    const pathConfig = {
+                        fromX: fromObj.left + fromObj.width,
+                        fromY: fromObj.top + this.clusterGroups[0][0].height / 2,
+                        toX: toObj.left + toObj.width,
+                        toY: toObj.top + toObj.height / 2,
+                    };
+                    var pathObject = new fabric.Path(this.linkPath(pathConfig).join(' '));
+
+                    path.set({
+                        'path': pathObject.path,
+                    });
+                });
+
+                this.canvas.renderAll();
             }
         });
     }
@@ -553,10 +532,38 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         this.fullscreen = true;
     }
 
+    /** 链接线 */
+    private linkPath = (pathFromAndTo: {
+        fromX: number;
+        fromY: number;
+        toX: number;
+        toY: number;
+    }): string[] => {
+        const pathConfig = Object.assign({}, pathFromAndTo, {
+            theta: 10,
+            headlen: 10,
+        });
+
+        const arrows = this.drawArrows(pathConfig);
+        const arrows2 = this.drawArrows(Object.assign({}, pathConfig, {
+            fromX: pathConfig.toX,
+            fromY: pathConfig.toY,
+            toX: pathConfig.fromX,
+            toY: pathConfig.fromY,
+        }));
+
+        return [
+            ...arrows,
+            `M ${pathConfig.fromX} ${pathConfig.fromY}`,
+            `L ${pathConfig.toX} ${pathConfig.toY}`,
+            ...arrows2,
+        ];
+    }
+
     /** 箭头 */
     private drawArrows = (obj: {
         fromX: number, fromY: number, toX: number, toY: number, theta: number, headlen: number
-    }): string => {
+    }): string[] => {
         const { fromX, fromY, toX, toY, theta, headlen } = obj;
 
         let angle = Math.atan2(fromY - toY, fromX - toX) * 180 / Math.PI;
@@ -567,45 +574,11 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         let botX = headlen * Math.cos(angle2);
         let botY = headlen * Math.sin(angle2);
 
-        let path = `
-            M ${toX + topX} ${toY + topY} 
-            L ${toX} ${toY} 
-            L ${toX + botX} ${toY + botY}
-        `;
-
-        return path;
-    }
-
-    /** 箭头2 */
-    private createArrowHead(points) {
-        var headLength = 15,
-
-            x1 = points[0],
-            y1 = points[1],
-            x2 = points[2],
-            y2 = points[3],
-
-            dx = x2 - x1,
-            dy = y2 - y1,
-
-            angle = Math.atan2(dy, dx);
-
-        angle *= 180 / Math.PI;
-        angle += 90;
-
-        const triangle = this.drawTriangle({
-            angle: angle,
-            fill: '#207cca',
-            top: y2,
-            left: x2,
-            height: headLength,
-            width: headLength,
-            originX: 'center',
-            originY: 'center',
-            selectable: false
-        });
-
-        return triangle;
+        return [
+            `M ${toX + topX} ${toY + topY}`,
+            `L ${toX} ${toY}`,
+            `L ${toX + botX} ${toY + botY}`,
+        ];
     }
 
     /**
@@ -616,6 +589,13 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             cluster.forEach((obj: any) => {
                 obj['drawObj']['cluster'].set({
                     stroke: '#999',
+                });
+
+                (obj.paths || []).forEach((path: any) => {
+                    path.set({
+                        fill: '#000',
+                        stroke: '#000',
+                    });
                 });
             });
         });
@@ -697,8 +677,11 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                     // 禁止四点定位
                     hasControls: false,
                     // 禁止选中
-                    selectable: false,
-                    // 鼠标样式
+                    // selectable: false,
+                    // 禁用缓存
+                    objectCaching: false,
+                    // 禁用事件
+                    evented: false,
                 },
                 option
             )
@@ -730,56 +713,6 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         ));
 
         return text;
-    }
-
-    // 画三角形
-    private drawTriangle(option: ITriangleOptions = {}): fabric.Triangle {
-        var line: fabric.Triangle = new fabric.Triangle(
-            Object.assign(
-                {},
-                {
-                    originX: 'center',
-                    originY: 'center',
-                    // 边框
-                    stroke: 'black',
-                    // 禁止四点定位
-                    hasControls: false,
-                    // 禁止选中
-                    selectable: false,
-                    // 鼠标样式
-                },
-                option
-            )
-        );
-
-        return line;
-    }
-
-    // 画线
-    private drawLine(path: number[] = [], option: ILineOptions = {}): fabric.Line {
-        var line: fabric.Line = new fabric.Line(
-            path,
-            Object.assign(
-                {},
-                {
-                    strokeWidth: 5,
-                    originX: 'center',
-                    originY: 'center',
-                    hasBorders: false,
-                    hasRotatingPoint: false,
-                    // 边框
-                    stroke: 'black',
-                    // 禁止四点定位
-                    hasControls: false,
-                    // 禁止选中
-                    selectable: false,
-                    // 鼠标样式
-                },
-                option
-            )
-        );
-
-        return line;
     }
 }
 
