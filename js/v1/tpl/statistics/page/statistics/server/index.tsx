@@ -294,7 +294,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
 
                 // 距离对象最近的对象
                 let minDistanceObj;
-                let minDistance;
+                let minDistance = 9999999999999999999999999;
 
                 this.clusterGroups.forEach((groups: any) => {
                     groups.forEach((cluster: any) => {
@@ -315,6 +315,8 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                         }
                     });
                 });
+
+                console.log(minDistanceObj.sourceData.id);
 
                 (e.target.paths || []).forEach((path: any) => {
                     const { fromObj, toObj } = path.objs;

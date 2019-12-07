@@ -686,7 +686,7 @@ var ServerView = /** @class */ (function (_super) {
                 };
                 // 距离对象最近的对象
                 var minDistanceObj;
-                var minDistance;
+                var minDistance = 9999999999999999999999999;
                 _this.clusterGroups.forEach(function (groups) {
                     groups.forEach(function (cluster) {
                         if (e.target.sourceData.id !== cluster.sourceData.id) {
@@ -705,6 +705,7 @@ var ServerView = /** @class */ (function (_super) {
                         }
                     });
                 });
+                console.log(minDistanceObj.sourceData.id);
                 (e.target.paths || []).forEach(function (path) {
                     var _a = path.objs, fromObj = _a.fromObj, toObj = _a.toObj;
                     var pathConfig = {
