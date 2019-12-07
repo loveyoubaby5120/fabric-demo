@@ -12,8 +12,8 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
     private PROPORTION = { width: 1, height: 1 };
 
     private canvas: fabric.Canvas;
-    // 拖拽位置
 
+    // 拖拽位置
     private lastPos: { x: number, y: number } = { x: 0, y: 0 };
     // 是否可拖拽
     private drag: boolean = false;
@@ -287,6 +287,35 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 }
             },
             'object:moving': (e: fabric.IEvent | any) => {
+                const clusterA = {
+                    x: e.target.left + e.target.width / 2,
+                    y: e.target.top + e.target.height / 2,
+                };
+
+                // 距离对象最近的对象
+                let minDistanceObj;
+                let minDistance;
+
+                this.clusterGroups.forEach((groups: any) => {
+                    groups.forEach((cluster: any) => {
+                        if (e.target.sourceData.id !== cluster.sourceData.id) {
+                            const clusterB = {
+                                x: cluster.left + cluster.width / 2,
+                                y: cluster.top + cluster.height / 2,
+                            };
+                            const x = clusterA.x - clusterB.x;
+                            const y = clusterA.y - clusterB.y;
+
+                            // 计算两个坐标点记录
+                            const distance = Math.sqrt(x * x + y * y);
+                            if (distance < minDistance) {
+                                minDistance = distance;
+                                minDistanceObj = cluster;
+                            }
+                        }
+                    });
+                });
+
                 (e.target.paths || []).forEach((path: any) => {
                     const { fromObj, toObj } = path.objs;
                     const pathConfig = {
@@ -450,6 +479,8 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             clusterGroup['open'] = open;
             clusterGroup['drawObj'] = drawObj;
             clusterGroup['sourceData'] = r;
+            clusterGroup['sourceGroup'] = sourceGroup;
+
             clusterGroup['keys'] = keys;
 
             if (keys.type === 'sourceNode') {

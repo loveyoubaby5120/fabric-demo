@@ -680,6 +680,31 @@ var ServerView = /** @class */ (function (_super) {
                 }
             },
             'object:moving': function (e) {
+                var clusterA = {
+                    x: e.target.left + e.target.width / 2,
+                    y: e.target.top + e.target.height / 2,
+                };
+                // 距离对象最近的对象
+                var minDistanceObj;
+                var minDistance;
+                _this.clusterGroups.forEach(function (groups) {
+                    groups.forEach(function (cluster) {
+                        if (e.target.sourceData.id !== cluster.sourceData.id) {
+                            var clusterB = {
+                                x: cluster.left + cluster.width / 2,
+                                y: cluster.top + cluster.height / 2,
+                            };
+                            var x = clusterA.x - clusterB.x;
+                            var y = clusterA.y - clusterB.y;
+                            // 计算两个坐标点记录
+                            var distance = Math.sqrt(x * x + y * y);
+                            if (distance < minDistance) {
+                                minDistance = distance;
+                                minDistanceObj = cluster;
+                            }
+                        }
+                    });
+                });
                 (e.target.paths || []).forEach(function (path) {
                     var _a = path.objs, fromObj = _a.fromObj, toObj = _a.toObj;
                     var pathConfig = {
@@ -773,6 +798,7 @@ var ServerView = /** @class */ (function (_super) {
             clusterGroup['open'] = open;
             clusterGroup['drawObj'] = drawObj;
             clusterGroup['sourceData'] = r;
+            clusterGroup['sourceGroup'] = sourceGroup;
             clusterGroup['keys'] = keys;
             if (keys.type === 'sourceNode') {
                 _this.canvas.add(clusterGroup);
