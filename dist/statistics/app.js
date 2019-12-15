@@ -449,16 +449,25 @@ var ServerView = /** @class */ (function (_super) {
         _this.min_zoom = 0.1;
         // 全屏
         _this.fullscreen = false;
-        // 集群大小
+        // 集群大小偏移量
         _this.groupBox = {
+            left: 100,
+            top: 50,
             width: 200,
-            height: 200
+            height: 200,
+            offset: {
+                left: 30,
+                top: 50,
+            },
         };
         // 服务器大小
         _this.subBox = {
             width: 50,
             height: 50,
-            offset: 50,
+            offset: {
+                left: 10,
+                top: 10,
+            },
         };
         /**
          * `mousewheel`事件处理
@@ -479,7 +488,7 @@ var ServerView = /** @class */ (function (_super) {
             e.stopPropagation();
         };
         _this.initRender = function () {
-            var groups = _this.drawGroup(_this.sourceData, __assign({ left: 100, top: 50 }, _this.groupBox), { type: 'sourceNode' }).groups;
+            var groups = _this.drawGroup(_this.sourceData, __assign({}, _this.groupBox), { type: 'sourceNode' }).groups;
             _this.clusterGroups = groups;
             // this.linkObj(this.clusterGroups[0][0], this.clusterGroups[1][0]);
         };
@@ -682,6 +691,11 @@ var ServerView = /** @class */ (function (_super) {
                 if (!(e.target && e.target['drawObj'])) {
                     return;
                 }
+                // console.log(e.e.clientX, e.e.clientY, e.target.initBox);
+                // console.log(e.e.clientX >= e.target.initBox.minLeft);
+                // console.log(e.e.clientX <= e.target.initBox.maxLeft);
+                // console.log(e.e.clientY >= e.target.initBox.minTop);
+                // console.log(e.e.clientY <= e.target.initBox.maxTop);
                 if (e.e.clientX >= e.target.initBox.minLeft &&
                     e.e.clientX <= e.target.initBox.maxLeft &&
                     e.e.clientY >= e.target.initBox.minTop &&
@@ -763,7 +777,7 @@ var ServerView = /** @class */ (function (_super) {
         };
         var groups = sourceData.map(function (r, i) {
             var _a = _this.drawObj(r, offset, keys), objGroup = _a.objGroup, objGroupBox = _a.objGroupBox;
-            offset.top = offset.top + objGroupBox.height + 50;
+            offset.top = offset.top + objGroupBox.height + _this.groupBox.offset.top;
             groupBox.width = (objGroupBox.sumWidth > groupBox.width ? objGroupBox.sumWidth : groupBox.width) - offset.width;
             groupBox.height = objGroupBox.sumHeight > groupBox.height ? objGroupBox.sumHeight : groupBox.height;
             return objGroup;
@@ -790,8 +804,8 @@ var ServerView = /** @class */ (function (_super) {
             if (open && r.hostList && r.hostList.length > 0) {
                 // 是否渲染服务器
                 var _a = _this.drawGroup(r.hostList, {
-                    left: options.left + 10,
-                    top: options.top + 10,
+                    left: options.left + _this.subBox.offset.left,
+                    top: options.top + _this.subBox.offset.top,
                     width: _this.subBox.width,
                     height: _this.subBox.height,
                 }, { type: 'subNode' }), subsGroup = _a.groups, subsGroupBox = _a.groupBox;
@@ -842,15 +856,15 @@ var ServerView = /** @class */ (function (_super) {
             clusterGroup['sourceGroup'] = sourceGroup;
             clusterGroup['keys'] = keys;
             clusterGroup['initBox'] = {
-                minLeft: clusterGroup.left,
-                minTop: clusterGroup.top,
-                maxLeft: clusterGroup.left + clusterGroup.width,
-                maxTop: clusterGroup.top + clusterGroup.height,
+                minLeft: clusterGroup.left - _this.groupBox.offset.left,
+                minTop: clusterGroup.top - _this.groupBox.offset.top,
+                maxLeft: clusterGroup.left + clusterGroup.width + _this.groupBox.offset.left * 2,
+                maxTop: clusterGroup.top + clusterGroup.height + _this.groupBox.offset.top * 2,
             };
             if (keys.type === 'sourceNode') {
                 _this.canvas.add(clusterGroup);
             }
-            options.left = options.left + options.width + 30;
+            options.left = options.left + options.width + _this.groupBox.offset.left;
             options.width = offset.width;
             options.height = offset.height;
             return clusterGroup;

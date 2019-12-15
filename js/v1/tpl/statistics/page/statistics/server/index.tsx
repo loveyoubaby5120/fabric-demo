@@ -125,17 +125,27 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
     // 全屏
     private fullscreen: boolean = false;
 
-    // 集群大小
-    private groupBox: { width: number, height: number } = {
+    // 集群大小偏移量
+    private groupBox: { left: number, top: number, width: number, height: number, offset: { left: number, top: number } } = {
+        left: 100,
+        top: 50,
         width: 200,
-        height: 200
+        height: 200,
+        offset: {
+            left: 30,
+            top: 50,
+        },
+
     };
 
     // 服务器大小
-    private subBox: { width: number, height: number, offset: number } = {
+    private subBox: { width: number, height: number, offset: { left: number, top: number } } = {
         width: 50,
         height: 50,
-        offset: 50,
+        offset: {
+            left: 10,
+            top: 10,
+        },
     };
 
     /**
@@ -206,11 +216,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
     private initRender = () => {
         const { groups } = this.drawGroup(
             this.sourceData,
-            {
-                left: 100,
-                top: 50,
-                ...this.groupBox,
-            },
+            { ...this.groupBox },
             { type: 'sourceNode' }
         );
         this.clusterGroups = groups;
@@ -293,6 +299,13 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 if (!(e.target && e.target['drawObj'])) {
                     return
                 }
+
+                // console.log(e.e.clientX, e.e.clientY, e.target.initBox);
+
+                // console.log(e.e.clientX >= e.target.initBox.minLeft);
+                // console.log(e.e.clientX <= e.target.initBox.maxLeft);
+                // console.log(e.e.clientY >= e.target.initBox.minTop);
+                // console.log(e.e.clientY <= e.target.initBox.maxTop);
 
                 if (
                     e.e.clientX >= e.target.initBox.minLeft &&
@@ -396,7 +409,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         };
         const groups = sourceData.map((r, i) => {
             const { objGroup, objGroupBox } = this.drawObj(r, offset, keys);
-            offset.top = offset.top + objGroupBox.height + 50;
+            offset.top = offset.top + objGroupBox.height + this.groupBox.offset.top;
 
             groupBox.width = (objGroupBox.sumWidth > groupBox.width ? objGroupBox.sumWidth : groupBox.width) - offset.width;
             groupBox.height = objGroupBox.sumHeight > groupBox.height ? objGroupBox.sumHeight : groupBox.height;
@@ -443,8 +456,8 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 const { groups: subsGroup, groupBox: subsGroupBox } = this.drawGroup(
                     r.hostList,
                     {
-                        left: options.left + 10,
-                        top: options.top + 10,
+                        left: options.left + this.subBox.offset.left,
+                        top: options.top + this.subBox.offset.top,
                         width: this.subBox.width,
                         height: this.subBox.height,
                     },
@@ -538,17 +551,17 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
 
             clusterGroup['keys'] = keys;
             clusterGroup['initBox'] = {
-                minLeft: clusterGroup.left,
-                minTop: clusterGroup.top,
-                maxLeft: clusterGroup.left + clusterGroup.width,
-                maxTop: clusterGroup.top + clusterGroup.height,
+                minLeft: clusterGroup.left - this.groupBox.offset.left,
+                minTop: clusterGroup.top - this.groupBox.offset.top,
+                maxLeft: clusterGroup.left + clusterGroup.width + this.groupBox.offset.left * 2,
+                maxTop: clusterGroup.top + clusterGroup.height + this.groupBox.offset.top * 2,
             };
 
             if (keys.type === 'sourceNode') {
                 this.canvas.add(clusterGroup);
             }
 
-            options.left = options.left + options.width + 30;
+            options.left = options.left + options.width + this.groupBox.offset.left;
             options.width = offset.width;
             options.height = offset.height;
 
