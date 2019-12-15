@@ -25,7 +25,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 id: 1,
                 groupName: '集群1',
                 labelName: 'p1111',
-                subData: [
+                hostList: [
                     [
 
                         {
@@ -294,7 +294,14 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                     return
                 }
 
-                // console.log(e.target);
+                if (
+                    e.e.clientX >= e.target.initBox.minLeft &&
+                    e.e.clientX <= e.target.initBox.maxLeft &&
+                    e.e.clientY >= e.target.initBox.minTop &&
+                    e.e.clientY <= e.target.initBox.maxTop
+                ) {
+                    return;
+                }
 
                 const clusterA = {
                     x: e.target.left + e.target.width / 2,
@@ -431,10 +438,10 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 openHeight: offset.height,
             };
 
-            if (open && r.subData && r.subData.length > 0) {
+            if (open && r.hostList && r.hostList.length > 0) {
                 // 是否渲染服务器
                 const { groups: subsGroup, groupBox: subsGroupBox } = this.drawGroup(
-                    r.subData,
+                    r.hostList,
                     {
                         left: options.left + 10,
                         top: options.top + 10,
@@ -484,8 +491,17 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 );
                 drawObj.line = line;
 
+                let count = 0;
+                if (r.hostList) {
+                    r.hostList.forEach(hosts => {
+                        hosts.forEach(obj => {
+                            count++;
+                        });
+                    });
+                }
+
                 const total = this.drawText(
-                    `${r.subData ? r.subData.length : 0}`,
+                    `${count}`,
                     {
                         ...totalBox,
                         originX: 'center',
@@ -521,6 +537,12 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             clusterGroup['sourceGroup'] = sourceGroup;
 
             clusterGroup['keys'] = keys;
+            clusterGroup['initBox'] = {
+                minLeft: clusterGroup.left,
+                minTop: clusterGroup.top,
+                maxLeft: clusterGroup.left + clusterGroup.width,
+                maxTop: clusterGroup.top + clusterGroup.height,
+            };
 
             if (keys.type === 'sourceNode') {
                 this.canvas.add(clusterGroup);

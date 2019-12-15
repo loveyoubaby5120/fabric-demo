@@ -355,7 +355,7 @@ var ServerView = /** @class */ (function (_super) {
                     id: 1,
                     groupName: '集群1',
                     labelName: 'p1111',
-                    subData: [
+                    hostList: [
                         [
                             {
                                 hostName: 'a1',
@@ -682,7 +682,12 @@ var ServerView = /** @class */ (function (_super) {
                 if (!(e.target && e.target['drawObj'])) {
                     return;
                 }
-                // console.log(e.target);
+                if (e.e.clientX >= e.target.initBox.minLeft &&
+                    e.e.clientX <= e.target.initBox.maxLeft &&
+                    e.e.clientY >= e.target.initBox.minTop &&
+                    e.e.clientY <= e.target.initBox.maxTop) {
+                    return;
+                }
                 var clusterA = {
                     x: e.target.left + e.target.width / 2,
                     y: e.target.top + e.target.height / 2,
@@ -782,9 +787,9 @@ var ServerView = /** @class */ (function (_super) {
                 openWidth: offset.width,
                 openHeight: offset.height,
             };
-            if (open && r.subData && r.subData.length > 0) {
+            if (open && r.hostList && r.hostList.length > 0) {
                 // 是否渲染服务器
-                var _a = _this.drawGroup(r.subData, {
+                var _a = _this.drawGroup(r.hostList, {
                     left: options.left + 10,
                     top: options.top + 10,
                     width: _this.subBox.width,
@@ -812,7 +817,15 @@ var ServerView = /** @class */ (function (_super) {
                     visible: !open,
                 });
                 drawObj.line = line;
-                var total = _this.drawText("" + (r.subData ? r.subData.length : 0), __assign({}, totalBox, { originX: 'center', originY: 'center', visible: !open }));
+                var count_1 = 0;
+                if (r.hostList) {
+                    r.hostList.forEach(function (hosts) {
+                        hosts.forEach(function (obj) {
+                            count_1++;
+                        });
+                    });
+                }
+                var total = _this.drawText("" + count_1, __assign({}, totalBox, { originX: 'center', originY: 'center', visible: !open }));
                 drawObj.total = total;
             }
             var label = _this.drawText(keys.type === 'sourceNode' ? "" + r.labelName : "" + r.hostName, __assign({}, labelBox, { originX: 'center', originY: 'top' }));
@@ -828,6 +841,12 @@ var ServerView = /** @class */ (function (_super) {
             clusterGroup['sourceDataIndex'] = i;
             clusterGroup['sourceGroup'] = sourceGroup;
             clusterGroup['keys'] = keys;
+            clusterGroup['initBox'] = {
+                minLeft: clusterGroup.left,
+                minTop: clusterGroup.top,
+                maxLeft: clusterGroup.left + clusterGroup.width,
+                maxTop: clusterGroup.top + clusterGroup.height,
+            };
             if (keys.type === 'sourceNode') {
                 _this.canvas.add(clusterGroup);
             }
