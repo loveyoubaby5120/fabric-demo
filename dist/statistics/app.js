@@ -687,6 +687,8 @@ var ServerView = /** @class */ (function (_super) {
                 // 距离对象最近的对象
                 var minDistanceObj;
                 var minDistance = 9999999999999999999999999;
+                // 位置：默认在对象前面
+                var position = 'left';
                 _this.clusterGroups.forEach(function (groups) {
                     groups.forEach(function (cluster) {
                         if (e.target.sourceData.id !== cluster.sourceData.id) {
@@ -702,6 +704,8 @@ var ServerView = /** @class */ (function (_super) {
                                 minDistance = distance;
                                 minDistanceObj = cluster;
                             }
+                            // 判断前后
+                            position = x > 0 ? 'right' : 'left';
                         }
                     });
                 });

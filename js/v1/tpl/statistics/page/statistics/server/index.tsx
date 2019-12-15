@@ -296,6 +296,9 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 let minDistanceObj;
                 let minDistance = 9999999999999999999999999;
 
+                // 位置：默认在对象前面
+                let position = 'left';
+
                 this.clusterGroups.forEach((groups: any) => {
                     groups.forEach((cluster: any) => {
                         if (e.target.sourceData.id !== cluster.sourceData.id) {
@@ -312,6 +315,9 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                                 minDistance = distance;
                                 minDistanceObj = cluster;
                             }
+
+                            // 判断前后
+                            position = x > 0 ? 'right' : 'left';
                         }
                     });
                 });
