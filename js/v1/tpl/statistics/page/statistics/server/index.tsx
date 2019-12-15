@@ -23,87 +23,93 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         [
             {
                 id: 1,
-                name: 'p1111',
+                groupName: '集群1',
+                labelName: 'p1111',
                 subData: [
                     [
 
                         {
-                            name: 'a1',
+                            hostName: 'a1',
                         },
                         {
-                            name: 'a2',
+                            hostName: 'a2',
                         },
                         {
-                            name: 'a3',
+                            hostName: 'a3',
                         },
                         {
-                            name: 'a4',
+                            hostName: 'a4',
                         },
                         {
-                            name: 'a5',
+                            hostName: 'a5',
                         },
                         {
-                            name: 'a6',
+                            hostName: 'a6',
                         },
                         {
-                            name: 'a7',
+                            hostName: 'a7',
                         },
                         {
-                            name: 'a8',
+                            hostName: 'a8',
                         },
                     ],
                     [
 
                         {
-                            name: 'a9',
+                            hostName: 'a9',
                         },
                         {
-                            name: 'a10',
+                            hostName: 'a10',
                         },
                         {
-                            name: 'a11',
+                            hostName: 'a11',
                         },
                     ],
                     [
                         {
-                            name: 'a12',
+                            hostName: 'a12',
                         },
                         {
-                            name: 'a13',
+                            hostName: 'a13',
                         },
                         {
-                            name: 'a14',
+                            hostName: 'a14',
                         },
                         {
-                            name: 'a15',
+                            hostName: 'a15',
                         },
                         {
-                            name: 'a16',
+                            hostName: 'a16',
                         },
                     ],
                 ]
             },
             {
                 id: 2,
-                name: 'p2222',
+                groupName: '集群2',
+                labelName: 'p2222',
             },
             {
                 id: 3,
-                name: 'p3333',
+                groupName: '集群3',
+                labelName: 'p3333',
             },
         ],
         [
             {
                 id: 4,
-                name: 'p4444',
+                groupName: '集群4',
+                labelName: 'p4444',
             },
             {
                 id: 5,
-                name: 'p5555',
+                groupName: '集群5',
+                labelName: 'p5555',
             },
             {
                 id: 6,
-                name: 'p6666',
+                groupName: '集群6',
+                labelName: 'p6666',
             },
         ],
     ];
@@ -118,6 +124,19 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
 
     // 全屏
     private fullscreen: boolean = false;
+
+    // 集群大小
+    private groupBox: { width: number, height: number } = {
+        width: 200,
+        height: 200
+    };
+
+    // 服务器大小
+    private subBox: { width: number, height: number, offset: number } = {
+        width: 50,
+        height: 50,
+        offset: 50,
+    };
 
     /**
      * 获取文档的大小
@@ -190,14 +209,13 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             {
                 left: 100,
                 top: 50,
-                width: 100,
-                height: 100,
+                ...this.groupBox,
             },
             { type: 'sourceNode' }
         );
         this.clusterGroups = groups;
 
-        this.linkObj(this.clusterGroups[0][0], this.clusterGroups[1][0]);
+        // this.linkObj(this.clusterGroups[0][0], this.clusterGroups[1][0]);
     }
 
     /** 创建链接关系 */
@@ -272,6 +290,11 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             },
             'mouse:up': (e: fabric.IEvent | any) => {
                 this.drag = false;
+                if (!(e.target && e.target['drawObj'])) {
+                    return
+                }
+
+                // console.log(e.target);
 
                 const clusterA = {
                     x: e.target.left + e.target.width / 2,
@@ -297,6 +320,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
 
                             // 计算两个坐标点记录
                             const distance = Math.sqrt(x * x + y * y);
+
                             if (distance < minDistance) {
                                 minDistance = distance;
                                 minDistanceObj = cluster;
@@ -308,7 +332,13 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                     });
                 });
 
-                console.log(minDistanceObj.sourceData.id, position, e.target.sourceData.id);
+                console.log({
+                    currentId: e.target.sourceData.id,
+                    currentIndex: e.target.sourceDataIndex,
+                    position,
+                    minDistanceObjId: minDistanceObj.sourceData.id,
+                    minDistanceObjIndex: minDistanceObj.sourceDataIndex,
+                });
             },
             'mouse:move': (e: fabric.IEvent | any) => {
                 if (this.drag) {
@@ -406,10 +436,10 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 const { groups: subsGroup, groupBox: subsGroupBox } = this.drawGroup(
                     r.subData,
                     {
-                        width: 20,
-                        height: 20,
                         left: options.left + 10,
                         top: options.top + 10,
+                        width: this.subBox.width,
+                        height: this.subBox.height,
                     },
                     { type: 'subNode' },
                 );
@@ -417,7 +447,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 box.openWidth = subsGroupBox.width > box.openWidth ? subsGroupBox.width : box.openWidth;
                 box.openHeight = subsGroupBox.height > box.openHeight ? subsGroupBox.height : box.openHeight;
 
-                options.width = open ? box.openWidth : offset.width;
+                options.width = (open ? box.openWidth : offset.width) + options.left;
                 options.height = open ? box.openHeight : offset.height;
 
                 // 拿到最新值
@@ -434,7 +464,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             const { titleBox, lineBox, totalBox, labelBox } = this.computeBox(options);
             if (keys.type === 'sourceNode') {
                 const title = this.drawText(
-                    '集群',
+                    r.groupName,
                     {
                         ...titleBox,
                         originX: 'center',
@@ -455,7 +485,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 drawObj.line = line;
 
                 const total = this.drawText(
-                    `${r.id}`,
+                    `${r.subData ? r.subData.length : 0}`,
                     {
                         ...totalBox,
                         originX: 'center',
@@ -467,7 +497,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             }
 
             const label = this.drawText(
-                `${r.name}`,
+                keys.type === 'sourceNode' ? `${r.labelName}` : `${r.hostName}`,
                 {
                     ...labelBox,
                     originX: 'center',
@@ -487,6 +517,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             clusterGroup['open'] = open;
             clusterGroup['drawObj'] = drawObj;
             clusterGroup['sourceData'] = r;
+            clusterGroup['sourceDataIndex'] = i;
             clusterGroup['sourceGroup'] = sourceGroup;
 
             clusterGroup['keys'] = keys;

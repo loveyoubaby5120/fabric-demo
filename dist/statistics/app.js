@@ -353,85 +353,91 @@ var ServerView = /** @class */ (function (_super) {
             [
                 {
                     id: 1,
-                    name: 'p1111',
+                    groupName: '集群1',
+                    labelName: 'p1111',
                     subData: [
                         [
                             {
-                                name: 'a1',
+                                hostName: 'a1',
                             },
                             {
-                                name: 'a2',
+                                hostName: 'a2',
                             },
                             {
-                                name: 'a3',
+                                hostName: 'a3',
                             },
                             {
-                                name: 'a4',
+                                hostName: 'a4',
                             },
                             {
-                                name: 'a5',
+                                hostName: 'a5',
                             },
                             {
-                                name: 'a6',
+                                hostName: 'a6',
                             },
                             {
-                                name: 'a7',
+                                hostName: 'a7',
                             },
                             {
-                                name: 'a8',
-                            },
-                        ],
-                        [
-                            {
-                                name: 'a9',
-                            },
-                            {
-                                name: 'a10',
-                            },
-                            {
-                                name: 'a11',
+                                hostName: 'a8',
                             },
                         ],
                         [
                             {
-                                name: 'a12',
+                                hostName: 'a9',
                             },
                             {
-                                name: 'a13',
+                                hostName: 'a10',
                             },
                             {
-                                name: 'a14',
+                                hostName: 'a11',
+                            },
+                        ],
+                        [
+                            {
+                                hostName: 'a12',
                             },
                             {
-                                name: 'a15',
+                                hostName: 'a13',
                             },
                             {
-                                name: 'a16',
+                                hostName: 'a14',
+                            },
+                            {
+                                hostName: 'a15',
+                            },
+                            {
+                                hostName: 'a16',
                             },
                         ],
                     ]
                 },
                 {
                     id: 2,
-                    name: 'p2222',
+                    groupName: '集群2',
+                    labelName: 'p2222',
                 },
                 {
                     id: 3,
-                    name: 'p3333',
+                    groupName: '集群3',
+                    labelName: 'p3333',
                 },
             ],
             [
                 {
                     id: 4,
-                    name: 'p4444',
+                    groupName: '集群4',
+                    labelName: 'p4444',
                 },
                 {
                     id: 5,
-                    name: 'p5555',
+                    groupName: '集群5',
+                    labelName: 'p5555',
                 },
                 {
                     id: 6,
-                    name: 'p6666',
+                    groupName: '集群6',
+                    labelName: 'p6666',
                 },
             ],
         ];
@@ -443,6 +449,17 @@ var ServerView = /** @class */ (function (_super) {
         _this.min_zoom = 0.1;
         // 全屏
         _this.fullscreen = false;
+        // 集群大小
+        _this.groupBox = {
+            width: 200,
+            height: 200
+        };
+        // 服务器大小
+        _this.subBox = {
+            width: 50,
+            height: 50,
+            offset: 50,
+        };
         /**
          * `mousewheel`事件处理
          */
@@ -462,14 +479,9 @@ var ServerView = /** @class */ (function (_super) {
             e.stopPropagation();
         };
         _this.initRender = function () {
-            var groups = _this.drawGroup(_this.sourceData, {
-                left: 100,
-                top: 50,
-                width: 100,
-                height: 100,
-            }, { type: 'sourceNode' }).groups;
+            var groups = _this.drawGroup(_this.sourceData, __assign({ left: 100, top: 50 }, _this.groupBox), { type: 'sourceNode' }).groups;
             _this.clusterGroups = groups;
-            _this.linkObj(_this.clusterGroups[0][0], _this.clusterGroups[1][0]);
+            // this.linkObj(this.clusterGroups[0][0], this.clusterGroups[1][0]);
         };
         /** 创建链接关系 */
         _this.linkObj = function (fromObj, toObj) {
@@ -667,6 +679,10 @@ var ServerView = /** @class */ (function (_super) {
             },
             'mouse:up': function (e) {
                 _this.drag = false;
+                if (!(e.target && e.target['drawObj'])) {
+                    return;
+                }
+                // console.log(e.target);
                 var clusterA = {
                     x: e.target.left + e.target.width / 2,
                     y: e.target.top + e.target.height / 2,
@@ -696,7 +712,13 @@ var ServerView = /** @class */ (function (_super) {
                         }
                     });
                 });
-                console.log(minDistanceObj.sourceData.id, position, e.target.sourceData.id);
+                console.log({
+                    currentId: e.target.sourceData.id,
+                    currentIndex: e.target.sourceDataIndex,
+                    position: position,
+                    minDistanceObjId: minDistanceObj.sourceData.id,
+                    minDistanceObjIndex: minDistanceObj.sourceDataIndex,
+                });
             },
             'mouse:move': function (e) {
                 if (_this.drag) {
@@ -763,14 +785,14 @@ var ServerView = /** @class */ (function (_super) {
             if (open && r.subData && r.subData.length > 0) {
                 // 是否渲染服务器
                 var _a = _this.drawGroup(r.subData, {
-                    width: 20,
-                    height: 20,
                     left: options.left + 10,
                     top: options.top + 10,
+                    width: _this.subBox.width,
+                    height: _this.subBox.height,
                 }, { type: 'subNode' }), subsGroup = _a.groups, subsGroupBox = _a.groupBox;
                 box.openWidth = subsGroupBox.width > box.openWidth ? subsGroupBox.width : box.openWidth;
                 box.openHeight = subsGroupBox.height > box.openHeight ? subsGroupBox.height : box.openHeight;
-                options.width = open ? box.openWidth : offset.width;
+                options.width = (open ? box.openWidth : offset.width) + options.left;
                 options.height = open ? box.openHeight : offset.height;
                 // 拿到最新值
                 cluster.set(options);
@@ -782,7 +804,7 @@ var ServerView = /** @class */ (function (_super) {
             objGroupBox.sumHeight = options.top + options.height > objGroupBox.sumHeight ? options.top + options.height : objGroupBox.sumHeight;
             var _b = _this.computeBox(options), titleBox = _b.titleBox, lineBox = _b.lineBox, totalBox = _b.totalBox, labelBox = _b.labelBox;
             if (keys.type === 'sourceNode') {
-                var title = _this.drawText('集群', __assign({}, titleBox, { originX: 'center', originY: 'center', visible: !open }));
+                var title = _this.drawText(r.groupName, __assign({}, titleBox, { originX: 'center', originY: 'center', visible: !open }));
                 drawObj.title = title;
                 var line = _this.drawPath(lineBox, {
                     fill: 'transparent',
@@ -790,10 +812,10 @@ var ServerView = /** @class */ (function (_super) {
                     visible: !open,
                 });
                 drawObj.line = line;
-                var total = _this.drawText("" + r.id, __assign({}, totalBox, { originX: 'center', originY: 'center', visible: !open }));
+                var total = _this.drawText("" + (r.subData ? r.subData.length : 0), __assign({}, totalBox, { originX: 'center', originY: 'center', visible: !open }));
                 drawObj.total = total;
             }
-            var label = _this.drawText("" + r.name, __assign({}, labelBox, { originX: 'center', originY: 'top' }));
+            var label = _this.drawText(keys.type === 'sourceNode' ? "" + r.labelName : "" + r.hostName, __assign({}, labelBox, { originX: 'center', originY: 'top' }));
             drawObj.label = label;
             var clusterGroup = new fabric_1.fabric.Group(_.flattenDeep(_.toArray(drawObj)), {
                 // 禁止四点定位
@@ -803,6 +825,7 @@ var ServerView = /** @class */ (function (_super) {
             clusterGroup['open'] = open;
             clusterGroup['drawObj'] = drawObj;
             clusterGroup['sourceData'] = r;
+            clusterGroup['sourceDataIndex'] = i;
             clusterGroup['sourceGroup'] = sourceGroup;
             clusterGroup['keys'] = keys;
             if (keys.type === 'sourceNode') {
