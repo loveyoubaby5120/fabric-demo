@@ -269,24 +269,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                     });
                     this.canvas.renderAll();
                 }
-            },
-            'mouse:up': (e: fabric.IEvent | any) => {
-                this.drag = false;
-            },
-            'mouse:move': (e: fabric.IEvent | any) => {
-                if (this.drag) {
-                    const vpt = this.canvas.viewportTransform;
 
-                    this.canvas.setViewportTransform([
-                        ...vpt.slice(0, 4),
-                        vpt[4] + e.e.clientX - this.lastPos.x,
-                        vpt[5] + e.e.clientY - this.lastPos.y,
-                    ]);
-                    this.lastPos.x = e.e.clientX;
-                    this.lastPos.y = e.e.clientY;
-                }
-            },
-            'object:moving': (e: fabric.IEvent | any) => {
                 const clusterA = {
                     x: e.target.left + e.target.width / 2,
                     y: e.target.top + e.target.height / 2,
@@ -322,7 +305,25 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                     });
                 });
 
-                console.log(minDistanceObj.sourceData.id);
+                console.log(minDistanceObj.sourceData.id, position);
+            },
+            'mouse:up': (e: fabric.IEvent | any) => {
+                this.drag = false;
+            },
+            'mouse:move': (e: fabric.IEvent | any) => {
+                if (this.drag) {
+                    const vpt = this.canvas.viewportTransform;
+
+                    this.canvas.setViewportTransform([
+                        ...vpt.slice(0, 4),
+                        vpt[4] + e.e.clientX - this.lastPos.x,
+                        vpt[5] + e.e.clientY - this.lastPos.y,
+                    ]);
+                    this.lastPos.x = e.e.clientX;
+                    this.lastPos.y = e.e.clientY;
+                }
+            },
+            'object:moving': (e: fabric.IEvent | any) => {
 
                 (e.target.paths || []).forEach((path: any) => {
                     const { fromObj, toObj } = path.objs;

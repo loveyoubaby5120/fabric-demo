@@ -664,22 +664,6 @@ var ServerView = /** @class */ (function (_super) {
                     });
                     _this.canvas.renderAll();
                 }
-            },
-            'mouse:up': function (e) {
-                _this.drag = false;
-            },
-            'mouse:move': function (e) {
-                if (_this.drag) {
-                    var vpt = _this.canvas.viewportTransform;
-                    _this.canvas.setViewportTransform(vpt.slice(0, 4).concat([
-                        vpt[4] + e.e.clientX - _this.lastPos.x,
-                        vpt[5] + e.e.clientY - _this.lastPos.y,
-                    ]));
-                    _this.lastPos.x = e.e.clientX;
-                    _this.lastPos.y = e.e.clientY;
-                }
-            },
-            'object:moving': function (e) {
                 var clusterA = {
                     x: e.target.left + e.target.width / 2,
                     y: e.target.top + e.target.height / 2,
@@ -709,7 +693,23 @@ var ServerView = /** @class */ (function (_super) {
                         }
                     });
                 });
-                console.log(minDistanceObj.sourceData.id);
+                console.log(minDistanceObj.sourceData.id, position);
+            },
+            'mouse:up': function (e) {
+                _this.drag = false;
+            },
+            'mouse:move': function (e) {
+                if (_this.drag) {
+                    var vpt = _this.canvas.viewportTransform;
+                    _this.canvas.setViewportTransform(vpt.slice(0, 4).concat([
+                        vpt[4] + e.e.clientX - _this.lastPos.x,
+                        vpt[5] + e.e.clientY - _this.lastPos.y,
+                    ]));
+                    _this.lastPos.x = e.e.clientX;
+                    _this.lastPos.y = e.e.clientY;
+                }
+            },
+            'object:moving': function (e) {
                 (e.target.paths || []).forEach(function (path) {
                     var _a = path.objs, fromObj = _a.fromObj, toObj = _a.toObj;
                     var pathConfig = {
