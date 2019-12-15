@@ -664,6 +664,9 @@ var ServerView = /** @class */ (function (_super) {
                     });
                     _this.canvas.renderAll();
                 }
+            },
+            'mouse:up': function (e) {
+                _this.drag = false;
                 var clusterA = {
                     x: e.target.left + e.target.width / 2,
                     y: e.target.top + e.target.height / 2,
@@ -694,9 +697,6 @@ var ServerView = /** @class */ (function (_super) {
                     });
                 });
                 console.log(minDistanceObj.sourceData.id, position);
-            },
-            'mouse:up': function (e) {
-                _this.drag = false;
             },
             'mouse:move': function (e) {
                 if (_this.drag) {

@@ -269,6 +269,9 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                     });
                     this.canvas.renderAll();
                 }
+            },
+            'mouse:up': (e: fabric.IEvent | any) => {
+                this.drag = false;
 
                 const clusterA = {
                     x: e.target.left + e.target.width / 2,
@@ -307,9 +310,6 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
 
                 console.log(minDistanceObj.sourceData.id, position);
             },
-            'mouse:up': (e: fabric.IEvent | any) => {
-                this.drag = false;
-            },
             'mouse:move': (e: fabric.IEvent | any) => {
                 if (this.drag) {
                     const vpt = this.canvas.viewportTransform;
@@ -324,7 +324,6 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 }
             },
             'object:moving': (e: fabric.IEvent | any) => {
-
                 (e.target.paths || []).forEach((path: any) => {
                     const { fromObj, toObj } = path.objs;
                     const pathConfig = {
