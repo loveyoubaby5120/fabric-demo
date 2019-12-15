@@ -191,8 +191,8 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         width: 50,
         height: 50,
         offset: {
-            left: 10,
-            top: 10,
+            left: 20,
+            top: 70,
         },
     };
 
@@ -538,7 +538,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             // 是否展开
             const open = _.findIndex(this.openCluster, oc => oc.id === r.id) !== -1 && keys.type === 'sourceNode';
             const drawObj: any = {};
-            let cluster: fabric.Rect | fabric.Image;
+            let cluster: any;
             if (keys.type === 'sourceNode') {
                 // 初始化画框
                 cluster = this.drawRect({
@@ -585,6 +585,60 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
 
                 // 拿到最新值
                 cluster.set(options);
+
+                const intranetOptions = {
+                    top: options.top - this.subBox.height / 2,
+                    left: options.left + options.width / 3 - this.subBox.width / 2,
+                    width: this.subBox.width,
+                    height: this.subBox.height,
+                };
+
+                const { labelBox: intranetBox } = this.computeBox(intranetOptions);
+
+                const intranet = _.clone(this.img[0]);
+                intranet.set({
+                    top: intranetOptions.top,
+                    left: intranetOptions.left,
+                    scaleX: intranetOptions.width / intranet.width,
+                    scaleY: intranetOptions.height / intranet.height
+                });
+
+                const intranetLabel = this.drawText(
+                    '内网',
+                    {
+                        ...intranetBox,
+                        originX: 'center',
+                        originY: 'top',
+                    },
+                );
+
+                const internetOptions = {
+                    top: options.top - this.subBox.height / 2,
+                    left: options.left + options.width / 3 * 2 - this.subBox.width / 2,
+                    width: this.subBox.width,
+                    height: this.subBox.height,
+                };
+
+                const { labelBox: internetBox } = this.computeBox(internetOptions);
+
+                const internet = _.clone(this.img[0]);
+                internet.set({
+                    top: internetOptions.top,
+                    left: internetOptions.left,
+                    scaleX: internetOptions.width / intranet.width,
+                    scaleY: internetOptions.height / intranet.height
+                });
+
+                const internetLabel = this.drawText(
+                    '外网',
+                    {
+                        ...internetBox,
+                        originX: 'center',
+                        originY: 'top',
+                    },
+                );
+
+                drawObj.network = [intranet, intranetLabel, internet, internetLabel];
 
                 drawObj.subsGroup = subsGroup;
             }

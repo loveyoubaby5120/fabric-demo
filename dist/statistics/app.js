@@ -513,8 +513,8 @@ var ServerView = /** @class */ (function (_super) {
             width: 50,
             height: 50,
             offset: {
-                left: 10,
-                top: 10,
+                left: 20,
+                top: 70,
             },
         };
         // 图片url
@@ -921,6 +921,37 @@ var ServerView = /** @class */ (function (_super) {
                 options.height = open ? box.openHeight : offset.height;
                 // 拿到最新值
                 cluster.set(options);
+                var intranetOptions = {
+                    top: options.top - _this.subBox.height / 2,
+                    left: options.left + options.width / 3 - _this.subBox.width / 2,
+                    width: _this.subBox.width,
+                    height: _this.subBox.height,
+                };
+                var intranetBox = _this.computeBox(intranetOptions).labelBox;
+                var intranet = _.clone(_this.img[0]);
+                intranet.set({
+                    top: intranetOptions.top,
+                    left: intranetOptions.left,
+                    scaleX: intranetOptions.width / intranet.width,
+                    scaleY: intranetOptions.height / intranet.height
+                });
+                var intranetLabel = _this.drawText('内网', __assign({}, intranetBox, { originX: 'center', originY: 'top' }));
+                var internetOptions = {
+                    top: options.top - _this.subBox.height / 2,
+                    left: options.left + options.width / 3 * 2 - _this.subBox.width / 2,
+                    width: _this.subBox.width,
+                    height: _this.subBox.height,
+                };
+                var internetBox = _this.computeBox(internetOptions).labelBox;
+                var internet = _.clone(_this.img[0]);
+                internet.set({
+                    top: internetOptions.top,
+                    left: internetOptions.left,
+                    scaleX: internetOptions.width / intranet.width,
+                    scaleY: internetOptions.height / intranet.height
+                });
+                var internetLabel = _this.drawText('外网', __assign({}, internetBox, { originX: 'center', originY: 'top' }));
+                drawObj.network = [intranet, intranetLabel, internet, internetLabel];
                 drawObj.subsGroup = subsGroup;
             }
             objGroupBox.width = options.width > objGroupBox.width ? options.width : objGroupBox.width;
