@@ -312,8 +312,8 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         const path: any = this.drawPath(
             this.linkPath(pathConfig).join(' '),
             {
-                fill: 'transparent',
-                stroke: 'block',
+                fill: '',
+                stroke: '#000',
                 objectCaching: false,
             }
         );
@@ -364,7 +364,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                     });
                     (e.target.paths || []).forEach((path: any) => {
                         path.set({
-                            fill: 'rgba(0, 0, 255, 0.4)',
+                            fill: '',
                             stroke: 'rgba(0, 0, 255, 0.4)',
                         });
                     });
@@ -465,8 +465,8 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
 
                     path.set({
                         path: pathObject.path,
-                        fill: 'transparent',
-                        stroke: 'block',
+                        fill: '',
+                        stroke: '#000',
                         objectCaching: false,
                     });
                 });
@@ -882,7 +882,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
 
                 (obj.paths || []).forEach((path: any) => {
                     path.set({
-                        fill: '#000',
+                        fill: '',
                         stroke: '#000',
                     });
                 });

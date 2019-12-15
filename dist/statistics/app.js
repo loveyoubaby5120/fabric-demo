@@ -557,8 +557,8 @@ var ServerView = /** @class */ (function (_super) {
                 toArrows: true,
             };
             var path = _this.drawPath(_this.linkPath(pathConfig).join(' '), {
-                fill: 'transparent',
-                stroke: 'block',
+                fill: '',
+                stroke: '#000',
                 objectCaching: false,
             });
             path.objs = {
@@ -758,7 +758,7 @@ var ServerView = /** @class */ (function (_super) {
                     });
                     (e.target.paths || []).forEach(function (path) {
                         path.set({
-                            fill: 'rgba(0, 0, 255, 0.4)',
+                            fill: '',
                             stroke: 'rgba(0, 0, 255, 0.4)',
                         });
                     });
@@ -843,8 +843,8 @@ var ServerView = /** @class */ (function (_super) {
                     var pathObject = new fabric_1.fabric.Path(_this.linkPath(pathConfig).join(' '));
                     path.set({
                         path: pathObject.path,
-                        fill: 'transparent',
-                        stroke: 'block',
+                        fill: '',
+                        stroke: '#000',
                         objectCaching: false,
                     });
                 });
@@ -1072,7 +1072,7 @@ var ServerView = /** @class */ (function (_super) {
                 });
                 (obj.paths || []).forEach(function (path) {
                     path.set({
-                        fill: '#000',
+                        fill: '',
                         stroke: '#000',
                     });
                 });
