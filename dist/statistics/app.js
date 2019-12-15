@@ -544,7 +544,7 @@ var ServerView = /** @class */ (function (_super) {
         _this.initRender = function () {
             var groups = _this.drawGroup(_this.sourceData, __assign({}, _this.groupBox), { type: 'sourceNode' }).groups;
             _this.clusterGroups = groups;
-            // this.linkObj(this.clusterGroups[0][0], this.clusterGroups[1][0]);
+            _this.linkObj(_this.clusterGroups[0][0], _this.clusterGroups[1][0]);
         };
         /** 创建链接关系 */
         _this.linkObj = function (fromObj, toObj) {
@@ -553,11 +553,13 @@ var ServerView = /** @class */ (function (_super) {
                 fromY: fromObj.top + _this.clusterGroups[0][0].height / 2,
                 toX: toObj.left + toObj.width,
                 toY: toObj.top + toObj.height / 2,
+                fromArrows: true,
+                toArrows: true,
             };
             var path = _this.drawPath(_this.linkPath(pathConfig).join(' '), {
-                fill: '#000',
-                stroke: '#000',
-                strokeWidth: 1,
+                fill: 'transparent',
+                stroke: 'block',
+                objectCaching: false,
             });
             path.objs = {
                 fromObj: fromObj,
@@ -601,16 +603,19 @@ var ServerView = /** @class */ (function (_super) {
                 theta: 10,
                 headlen: 10,
             });
-            var arrows = _this.drawArrows(pathConfig);
-            var arrows2 = _this.drawArrows(Object.assign({}, pathConfig, {
+            var arrows = pathFromAndTo.toArrows ? _this.drawArrows(pathConfig) : [];
+            var arrows2 = pathFromAndTo.fromArrows ? _this.drawArrows(Object.assign({}, pathConfig, {
                 fromX: pathConfig.toX,
                 fromY: pathConfig.toY,
                 toX: pathConfig.fromX,
                 toY: pathConfig.fromY,
-            }));
+            })) : [];
+            var offset = pathFromAndTo.fromArrows ? 100 : -100;
+            var q = "Q " + ((pathConfig.fromX + pathConfig.toX) / 2 + offset) + " " + (pathConfig.fromY + pathConfig.toY) / 2;
             return arrows.concat([
                 "M " + pathConfig.fromX + " " + pathConfig.fromY,
-                "L " + pathConfig.toX + " " + pathConfig.toY
+                q,
+                " " + pathConfig.toX + " " + pathConfig.toY
             ], arrows2);
         };
         /** 箭头 */
@@ -831,14 +836,19 @@ var ServerView = /** @class */ (function (_super) {
                         fromY: fromObj.top + _this.clusterGroups[0][0].height / 2,
                         toX: toObj.left + toObj.width,
                         toY: toObj.top + toObj.height / 2,
+                        fromArrows: true,
+                        toArrows: true,
                     };
                     var pathObject = new fabric_1.fabric.Path(_this.linkPath(pathConfig).join(' '));
                     path.set({
-                        'path': pathObject.path,
+                        path: pathObject.path,
+                        fill: 'transparent',
+                        stroke: 'block',
+                        objectCaching: false,
                     });
                 });
                 _this.canvas.renderAll();
-            }
+            },
         });
     };
     /** 渲染组 */
@@ -1094,17 +1104,15 @@ var ServerView = /** @class */ (function (_super) {
     ServerView.prototype.drawPath = function (path, option) {
         if (path === void 0) { path = ''; }
         if (option === void 0) { option = {}; }
-        var pathLine = new fabric_1.fabric.Path(path || 'M 65 0 Q 100, 100, 200, 0', Object.assign({}, {
+        var pathLine = new fabric_1.fabric.Path(path, Object.assign({}, {
             // 边框
-            stroke: 'black',
+            // stroke: 'black',
             // 禁止四点定位
             hasControls: false,
             // 禁止选中
             // selectable: false,
             // 禁用缓存
             objectCaching: false,
-            // 禁用事件
-            evented: false,
         }, option));
         return pathLine;
     };
