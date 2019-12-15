@@ -821,10 +821,14 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         fromArrows: boolean;
         toArrows: boolean;
     }): string[] => {
+        const offset = pathFromAndTo.fromArrows ? 100 : -100;
+
         const pathConfig = Object.assign({}, pathFromAndTo, {
             theta: 10,
             headlen: 10,
+            offset,
         });
+
 
         const arrows = pathFromAndTo.toArrows ? this.drawArrows(pathConfig) : [];
         const arrows2 = pathFromAndTo.fromArrows ? this.drawArrows(Object.assign({}, pathConfig, {
@@ -833,8 +837,6 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             toX: pathConfig.fromX,
             toY: pathConfig.fromY,
         })) : [];
-
-        const offset = pathFromAndTo.fromArrows ? 100 : -100;
 
         const q = `Q ${(pathConfig.fromX + pathConfig.toX) / 2 + offset} ${(pathConfig.fromY + pathConfig.toY) / 2}`
 
@@ -849,11 +851,11 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
 
     /** 箭头 */
     private drawArrows = (obj: {
-        fromX: number, fromY: number, toX: number, toY: number, theta: number, headlen: number
+        fromX: number, fromY: number, toX: number, toY: number, theta: number, headlen: number, offset: number
     }): string[] => {
-        const { fromX, fromY, toX, toY, theta, headlen } = obj;
+        const { fromX, fromY, toX, toY, theta, headlen, offset } = obj;
 
-        let angle = Math.atan2(fromY - toY, fromX - toX) * 180 / Math.PI;
+        let angle = Math.atan2(fromY - toY, fromX - toX + offset) * 180 / Math.PI;
         let angle1 = (angle + theta) * Math.PI / 180;
         let angle2 = (angle - theta) * Math.PI / 180;
         let topX = headlen * Math.cos(angle1);

@@ -599,9 +599,11 @@ var ServerView = /** @class */ (function (_super) {
         };
         /** 链接线 */
         _this.linkPath = function (pathFromAndTo) {
+            var offset = pathFromAndTo.fromArrows ? 100 : -100;
             var pathConfig = Object.assign({}, pathFromAndTo, {
                 theta: 10,
                 headlen: 10,
+                offset: offset,
             });
             var arrows = pathFromAndTo.toArrows ? _this.drawArrows(pathConfig) : [];
             var arrows2 = pathFromAndTo.fromArrows ? _this.drawArrows(Object.assign({}, pathConfig, {
@@ -610,7 +612,6 @@ var ServerView = /** @class */ (function (_super) {
                 toX: pathConfig.fromX,
                 toY: pathConfig.fromY,
             })) : [];
-            var offset = pathFromAndTo.fromArrows ? 100 : -100;
             var q = "Q " + ((pathConfig.fromX + pathConfig.toX) / 2 + offset) + " " + (pathConfig.fromY + pathConfig.toY) / 2;
             return arrows.concat([
                 "M " + pathConfig.fromX + " " + pathConfig.fromY,
@@ -620,8 +621,8 @@ var ServerView = /** @class */ (function (_super) {
         };
         /** 箭头 */
         _this.drawArrows = function (obj) {
-            var fromX = obj.fromX, fromY = obj.fromY, toX = obj.toX, toY = obj.toY, theta = obj.theta, headlen = obj.headlen;
-            var angle = Math.atan2(fromY - toY, fromX - toX) * 180 / Math.PI;
+            var fromX = obj.fromX, fromY = obj.fromY, toX = obj.toX, toY = obj.toY, theta = obj.theta, headlen = obj.headlen, offset = obj.offset;
+            var angle = Math.atan2(fromY - toY, fromX - toX + offset) * 180 / Math.PI;
             var angle1 = (angle + theta) * Math.PI / 180;
             var angle2 = (angle - theta) * Math.PI / 180;
             var topX = headlen * Math.cos(angle1);
