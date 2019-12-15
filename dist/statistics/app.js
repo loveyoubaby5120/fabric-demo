@@ -1110,9 +1110,11 @@ var ServerView = /** @class */ (function (_super) {
             // 禁止四点定位
             hasControls: false,
             // 禁止选中
-            // selectable: false,
+            selectable: false,
             // 禁用缓存
             objectCaching: false,
+            // 禁用事件
+            evented: false,
         }, option));
         return pathLine;
     };

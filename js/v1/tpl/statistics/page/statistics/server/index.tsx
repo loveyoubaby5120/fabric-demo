@@ -964,11 +964,11 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                     // 禁止四点定位
                     hasControls: false,
                     // 禁止选中
-                    // selectable: false,
+                    selectable: false,
                     // 禁用缓存
                     objectCaching: false,
                     // 禁用事件
-                    // evented: false,
+                    evented: false,
                 },
                 option
             )
