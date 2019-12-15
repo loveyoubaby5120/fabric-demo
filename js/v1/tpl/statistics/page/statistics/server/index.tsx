@@ -196,6 +196,14 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         },
     };
 
+    // 图片url
+    private imgUrls: string[] = [
+        'https://cdn.pixabay.com/photo/2019/12/08/01/08/winter-4680354__340.jpg',
+    ];
+
+    // 图片fabric对象
+    private img: fabric.Image[] = [];
+
     /**
      * 获取文档的大小
      */
@@ -221,8 +229,26 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         window.addEventListener('resize', this.handleWindowResize);
         this.handleWindowResize();
         this.subscriptionEvent();
-        this.initRender();
-        document.getElementById('an').parentNode.addEventListener('mousewheel', this.handleMousewheel)
+        this.createImgObj();
+        this.createImg();
+        document.getElementById('an').parentNode.addEventListener('mousewheel', this.handleMousewheel);
+    }
+
+    createImgObj() {
+        this.imgUrls.forEach((url: string) => {
+            this.drawImg(url, {});
+        });
+    }
+
+    // 创建图片定时器
+    createImg() {
+        setTimeout(() => {
+            if (this.img.length > 0) {
+                this.initRender();
+            } else {
+                this.createImg();
+            }
+        }, 1000);
     }
 
     /**
@@ -512,15 +538,26 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             // 是否展开
             const open = _.findIndex(this.openCluster, oc => oc.id === r.id) !== -1 && keys.type === 'sourceNode';
             const drawObj: any = {};
+            let cluster: fabric.Rect | fabric.Image;
+            if (keys.type === 'sourceNode') {
+                // 初始化画框
+                cluster = this.drawRect({
+                    ...options,
+                    rx: 10,
+                    ry: 10,
+                });
 
-            // 初始化画框
-            const cluster: fabric.Rect = this.drawRect({
-                ...options,
-                rx: 10,
-                ry: 10,
-            });
-
-            drawObj.cluster = cluster;
+                drawObj.cluster = cluster;
+            } else {
+                cluster = _.clone(this.img[0]);
+                cluster.set({
+                    top: options.top,
+                    left: options.left,
+                    scaleX: options.width / cluster.width,
+                    scaleY: options.height / cluster.height
+                });
+                drawObj.cluster = cluster;
+            }
 
             const box = {
                 openWidth: offset.width,
@@ -894,6 +931,23 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         ));
 
         return text;
+    }
+
+    // 画图片
+    private drawImg(url, option: TextOptions = {}) {
+        fabric.Image.fromURL(url, (img) => {
+            img.set(Object.assign(
+                {},
+                {
+                    // 禁止四点定位
+                    hasControls: false,
+                    // 禁止选中
+                    selectable: false,
+                },
+                option
+            ));
+            this.img.push(img);
+        });
     }
 }
 

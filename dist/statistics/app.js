@@ -517,6 +517,12 @@ var ServerView = /** @class */ (function (_super) {
                 top: 10,
             },
         };
+        // 图片url
+        _this.imgUrls = [
+            'https://cdn.pixabay.com/photo/2019/12/08/01/08/winter-4680354__340.jpg',
+        ];
+        // 图片fabric对象
+        _this.img = [];
         /**
          * `mousewheel`事件处理
          */
@@ -685,8 +691,27 @@ var ServerView = /** @class */ (function (_super) {
         window.addEventListener('resize', this.handleWindowResize);
         this.handleWindowResize();
         this.subscriptionEvent();
-        this.initRender();
+        this.createImgObj();
+        this.createImg();
         document.getElementById('an').parentNode.addEventListener('mousewheel', this.handleMousewheel);
+    };
+    ServerView.prototype.createImgObj = function () {
+        var _this = this;
+        this.imgUrls.forEach(function (url) {
+            _this.drawImg(url, {});
+        });
+    };
+    // 创建图片定时器
+    ServerView.prototype.createImg = function () {
+        var _this = this;
+        setTimeout(function () {
+            if (_this.img.length > 0) {
+                _this.initRender();
+            }
+            else {
+                _this.createImg();
+            }
+        }, 1000);
     };
     /**
      * 滚轮缩放
@@ -862,9 +887,22 @@ var ServerView = /** @class */ (function (_super) {
             // 是否展开
             var open = _.findIndex(_this.openCluster, function (oc) { return oc.id === r.id; }) !== -1 && keys.type === 'sourceNode';
             var drawObj = {};
-            // 初始化画框
-            var cluster = _this.drawRect(__assign({}, options, { rx: 10, ry: 10 }));
-            drawObj.cluster = cluster;
+            var cluster;
+            if (keys.type === 'sourceNode') {
+                // 初始化画框
+                cluster = _this.drawRect(__assign({}, options, { rx: 10, ry: 10 }));
+                drawObj.cluster = cluster;
+            }
+            else {
+                cluster = _.clone(_this.img[0]);
+                cluster.set({
+                    top: options.top,
+                    left: options.left,
+                    scaleX: options.width / cluster.width,
+                    scaleY: options.height / cluster.height
+                });
+                drawObj.cluster = cluster;
+            }
             var box = {
                 openWidth: offset.width,
                 openHeight: offset.height,
@@ -1058,6 +1096,20 @@ var ServerView = /** @class */ (function (_super) {
             selectable: false,
         }, option));
         return text;
+    };
+    // 画图片
+    ServerView.prototype.drawImg = function (url, option) {
+        var _this = this;
+        if (option === void 0) { option = {}; }
+        fabric_1.fabric.Image.fromURL(url, function (img) {
+            img.set(Object.assign({}, {
+                // 禁止四点定位
+                hasControls: false,
+                // 禁止选中
+                selectable: false,
+            }, option));
+            _this.img.push(img);
+        });
     };
     ServerView = __decorate([
         radium_1.Radium
