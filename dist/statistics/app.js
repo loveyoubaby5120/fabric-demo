@@ -696,7 +696,6 @@ var ServerView = /** @class */ (function (_super) {
                         }
                     });
                 });
-                console.log(minDistanceObj.sourceData.id, position);
             },
             'mouse:move': function (e) {
                 if (_this.drag) {

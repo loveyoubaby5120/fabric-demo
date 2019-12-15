@@ -307,8 +307,6 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                         }
                     });
                 });
-
-                console.log(minDistanceObj.sourceData.id, position);
             },
             'mouse:move': (e: fabric.IEvent | any) => {
                 if (this.drag) {
