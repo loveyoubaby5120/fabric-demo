@@ -855,11 +855,9 @@ var ServerView = /** @class */ (function (_super) {
                     x: e.e.clientX - canvas.getBoundingClientRect().left,
                     y: e.e.clientY - canvas.getBoundingClientRect().top
                 };
-                var acitvePath;
                 _this.paths.forEach(function (path) {
                     var isMouseInLine = path.isMouseInLine(mouse);
                     if (isMouseInLine) {
-                        acitvePath = path;
                         _this.deActiveObject();
                         path.objs.fromObj.drawObj.cluster.set({
                             stroke: 'rgba(255, 255, 0, .4)',
@@ -874,8 +872,6 @@ var ServerView = /** @class */ (function (_super) {
                         _this.canvas.renderAll();
                     }
                 });
-                if (acitvePath) {
-                }
             },
             'object:moving': function (e) {
                 (e.target.paths || []).forEach(function (path) {

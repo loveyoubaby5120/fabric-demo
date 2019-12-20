@@ -484,12 +484,9 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                     y: e.e.clientY - canvas.getBoundingClientRect().top
                 };
 
-                let acitvePath;
-
                 this.paths.forEach((path: any) => {
                     let isMouseInLine = path.isMouseInLine(mouse);
                     if (isMouseInLine) {
-                        acitvePath = path;
                         this.deActiveObject();
                         path.objs.fromObj.drawObj.cluster.set({
                             stroke: 'rgba(255, 255, 0, .4)',
@@ -504,9 +501,6 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                         this.canvas.renderAll();
                     }
                 });
-                if (acitvePath) {
-
-                }
             },
             'object:moving': (e: fabric.IEvent | any) => {
                 (e.target.paths || []).forEach((path: any) => {
