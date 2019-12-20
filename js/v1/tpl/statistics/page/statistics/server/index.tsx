@@ -202,7 +202,10 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
     ];
 
     // 图片fabric对象
-    private img: fabric.Image[] = [];
+    private imgs: fabric.Image[] = [];
+
+    // pathfabric对象
+    private paths: fabric.Path[] = [];
 
     /**
      * 获取文档的大小
@@ -243,7 +246,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
     // 创建图片定时器
     createImg() {
         setTimeout(() => {
-            if (this.img.length > 0) {
+            if (this.imgs.length > 0) {
                 this.initRender();
             } else {
                 this.createImg();
@@ -295,28 +298,50 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         );
         this.clusterGroups = groups;
 
-        this.linkObj(this.clusterGroups[0][0], this.clusterGroups[1][0]);
+        this.linkObj(this.clusterGroups[0][0], this.clusterGroups[1][0], false, true, 1);
+        this.linkObj(this.clusterGroups[0][0], this.clusterGroups[1][0], true, true, 2);
     }
 
     /** 创建链接关系 */
-    private linkObj = (fromObj: any, toObj: any) => {
+    private linkObj = (fromObj: any, toObj: any, fromArrows: boolean, toArrows: boolean, index: number) => {
         const pathConfig = {
             fromX: fromObj.left + fromObj.width,
             fromY: fromObj.top + this.clusterGroups[0][0].height / 2,
             toX: toObj.left + toObj.width,
             toY: toObj.top + toObj.height / 2,
-            fromArrows: true,
-            toArrows: true,
+            fromArrows,
+            toArrows,
         };
+        const drapPath = this.linkPath(pathConfig);
+        let Bezier = [];
+        drapPath.forEach(path => {
+            if (path.indexOf('Q') !== -1) {
+                Bezier = path.split(' ');
+            }
+        });
 
         const path: any = this.drawPath(
-            this.linkPath(pathConfig).join(' '),
+            drapPath.join(' '),
             {
                 fill: '',
                 stroke: '#000',
                 objectCaching: false,
             }
         );
+
+        path.index = index;
+        path.isMouseInLine = (mouse: { x: number, y: number }) => {
+            const canvas: any = document.getElementById('an');
+            const ctx = canvas.getContext('2d');
+
+            ctx.beginPath();
+            ctx.moveTo(pathConfig.fromX, pathConfig.fromY);
+            ctx.quadraticCurveTo(Bezier[1], Bezier[2], pathConfig.toX, pathConfig.toY);
+            ctx.lineWidth = 10;
+            ctx.lineCap = 'round';
+
+            return ctx.isPointInStroke(mouse.x, mouse.y)
+        }
 
         path.objs = {
             fromObj,
@@ -334,6 +359,8 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         } else {
             toObj.paths.push(path);
         }
+
+        this.paths.push(path);
 
         this.canvas.add(path);
     }
@@ -399,8 +426,8 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 };
 
                 // 距离对象最近的对象
-                let minDistanceObj;
-                let minDistance = 9999999999999999999999999;
+                let minDistanceObj: any;
+                let minDistance: number = 9999999999999999999999999;
 
                 // 位置：默认在对象前面
                 let position = 'left';
@@ -448,6 +475,37 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                     ]);
                     this.lastPos.x = e.e.clientX;
                     this.lastPos.y = e.e.clientY;
+                }
+
+                const canvas: any = document.getElementById('an');
+
+                var mouse = {
+                    x: e.e.clientX - canvas.getBoundingClientRect().left,
+                    y: e.e.clientY - canvas.getBoundingClientRect().top
+                };
+
+                let acitvePath;
+
+                this.paths.forEach((path: any) => {
+                    let isMouseInLine = path.isMouseInLine(mouse);
+                    if (isMouseInLine) {
+                        acitvePath = path;
+                        this.deActiveObject();
+                        path.objs.fromObj.drawObj.cluster.set({
+                            stroke: 'rgba(255, 255, 0, .4)',
+                        });
+                        path.objs.toObj.drawObj.cluster.set({
+                            stroke: 'rgba(255, 255, 0, .4)',
+                        });
+                        path.set({
+                            fill: '',
+                            stroke: 'rgba(0, 0, 255, 0.4)',
+                        });
+                        this.canvas.renderAll();
+                    }
+                });
+                if (acitvePath) {
+
                 }
             },
             'object:moving': (e: fabric.IEvent | any) => {
@@ -557,7 +615,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
 
                 drawObj.cluster = cluster;
             } else {
-                cluster = _.clone(this.img[0]);
+                cluster = _.clone(this.imgs[0]);
                 cluster.set({
                     top: options.top,
                     left: options.left,
@@ -603,7 +661,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
 
                 const { labelBox: intranetBox } = this.computeBox(intranetOptions);
 
-                const intranet = _.clone(this.img[0]);
+                const intranet = _.clone(this.imgs[0]);
                 intranet.set({
                     top: intranetOptions.top,
                     left: intranetOptions.left,
@@ -629,7 +687,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
 
                 const { labelBox: internetBox } = this.computeBox(internetOptions);
 
-                const internet = _.clone(this.img[0]);
+                const internet = _.clone(this.imgs[0]);
                 internet.set({
                     top: internetOptions.top,
                     left: internetOptions.left,
@@ -681,8 +739,8 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
 
                 let count = 0;
                 if (r.hostList) {
-                    r.hostList.forEach(hosts => {
-                        hosts.forEach(obj => {
+                    r.hostList.forEach((hosts: any) => {
+                        hosts.forEach((obj: any) => {
                             count++;
                         });
                     });
@@ -1005,7 +1063,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
     }
 
     // 画图片
-    private drawImg(url, option: TextOptions = {}) {
+    private drawImg(url: string, option: TextOptions = {}) {
         fabric.Image.fromURL(url, (img) => {
             img.set(Object.assign(
                 {},
@@ -1017,7 +1075,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 },
                 option
             ));
-            this.img.push(img);
+            this.imgs.push(img);
         });
     }
 }

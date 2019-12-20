@@ -522,7 +522,9 @@ var ServerView = /** @class */ (function (_super) {
             'https://cdn.pixabay.com/photo/2019/12/08/01/08/winter-4680354__340.jpg',
         ];
         // 图片fabric对象
-        _this.img = [];
+        _this.imgs = [];
+        // pathfabric对象
+        _this.paths = [];
         /**
          * `mousewheel`事件处理
          */
@@ -544,23 +546,42 @@ var ServerView = /** @class */ (function (_super) {
         _this.initRender = function () {
             var groups = _this.drawGroup(_this.sourceData, __assign({}, _this.groupBox), { type: 'sourceNode' }).groups;
             _this.clusterGroups = groups;
-            _this.linkObj(_this.clusterGroups[0][0], _this.clusterGroups[1][0]);
+            _this.linkObj(_this.clusterGroups[0][0], _this.clusterGroups[1][0], false, true, 1);
+            _this.linkObj(_this.clusterGroups[0][0], _this.clusterGroups[1][0], true, true, 2);
         };
         /** 创建链接关系 */
-        _this.linkObj = function (fromObj, toObj) {
+        _this.linkObj = function (fromObj, toObj, fromArrows, toArrows, index) {
             var pathConfig = {
                 fromX: fromObj.left + fromObj.width,
                 fromY: fromObj.top + _this.clusterGroups[0][0].height / 2,
                 toX: toObj.left + toObj.width,
                 toY: toObj.top + toObj.height / 2,
-                fromArrows: true,
-                toArrows: true,
+                fromArrows: fromArrows,
+                toArrows: toArrows,
             };
-            var path = _this.drawPath(_this.linkPath(pathConfig).join(' '), {
+            var drapPath = _this.linkPath(pathConfig);
+            var Bezier = [];
+            drapPath.forEach(function (path) {
+                if (path.indexOf('Q') !== -1) {
+                    Bezier = path.split(' ');
+                }
+            });
+            var path = _this.drawPath(drapPath.join(' '), {
                 fill: '',
                 stroke: '#000',
                 objectCaching: false,
             });
+            path.index = index;
+            path.isMouseInLine = function (mouse) {
+                var canvas = document.getElementById('an');
+                var ctx = canvas.getContext('2d');
+                ctx.beginPath();
+                ctx.moveTo(pathConfig.fromX, pathConfig.fromY);
+                ctx.quadraticCurveTo(Bezier[1], Bezier[2], pathConfig.toX, pathConfig.toY);
+                ctx.lineWidth = 10;
+                ctx.lineCap = 'round';
+                return ctx.isPointInStroke(mouse.x, mouse.y);
+            };
             path.objs = {
                 fromObj: fromObj,
                 toObj: toObj,
@@ -577,6 +598,7 @@ var ServerView = /** @class */ (function (_super) {
             else {
                 toObj.paths.push(path);
             }
+            _this.paths.push(path);
             _this.canvas.add(path);
         };
         /** 计算集群 Box */
@@ -711,7 +733,7 @@ var ServerView = /** @class */ (function (_super) {
     ServerView.prototype.createImg = function () {
         var _this = this;
         setTimeout(function () {
-            if (_this.img.length > 0) {
+            if (_this.imgs.length > 0) {
                 _this.initRender();
             }
             else {
@@ -828,6 +850,32 @@ var ServerView = /** @class */ (function (_super) {
                     _this.lastPos.x = e.e.clientX;
                     _this.lastPos.y = e.e.clientY;
                 }
+                var canvas = document.getElementById('an');
+                var mouse = {
+                    x: e.e.clientX - canvas.getBoundingClientRect().left,
+                    y: e.e.clientY - canvas.getBoundingClientRect().top
+                };
+                var acitvePath;
+                _this.paths.forEach(function (path) {
+                    var isMouseInLine = path.isMouseInLine(mouse);
+                    if (isMouseInLine) {
+                        acitvePath = path;
+                        _this.deActiveObject();
+                        path.objs.fromObj.drawObj.cluster.set({
+                            stroke: 'rgba(255, 255, 0, .4)',
+                        });
+                        path.objs.toObj.drawObj.cluster.set({
+                            stroke: 'rgba(255, 255, 0, .4)',
+                        });
+                        path.set({
+                            fill: '',
+                            stroke: 'rgba(0, 0, 255, 0.4)',
+                        });
+                        _this.canvas.renderAll();
+                    }
+                });
+                if (acitvePath) {
+                }
             },
             'object:moving': function (e) {
                 (e.target.paths || []).forEach(function (path) {
@@ -905,7 +953,7 @@ var ServerView = /** @class */ (function (_super) {
                 drawObj.cluster = cluster;
             }
             else {
-                cluster = _.clone(_this.img[0]);
+                cluster = _.clone(_this.imgs[0]);
                 cluster.set({
                     top: options.top,
                     left: options.left,
@@ -939,7 +987,7 @@ var ServerView = /** @class */ (function (_super) {
                     height: _this.subBox.height,
                 };
                 var intranetBox = _this.computeBox(intranetOptions).labelBox;
-                var intranet = _.clone(_this.img[0]);
+                var intranet = _.clone(_this.imgs[0]);
                 intranet.set({
                     top: intranetOptions.top,
                     left: intranetOptions.left,
@@ -954,7 +1002,7 @@ var ServerView = /** @class */ (function (_super) {
                     height: _this.subBox.height,
                 };
                 var internetBox = _this.computeBox(internetOptions).labelBox;
-                var internet = _.clone(_this.img[0]);
+                var internet = _.clone(_this.imgs[0]);
                 internet.set({
                     top: internetOptions.top,
                     left: internetOptions.left,
@@ -1150,7 +1198,7 @@ var ServerView = /** @class */ (function (_super) {
                 // 禁止选中
                 selectable: false,
             }, option));
-            _this.img.push(img);
+            _this.imgs.push(img);
         });
     };
     ServerView = __decorate([
