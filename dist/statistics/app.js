@@ -504,8 +504,10 @@ var ServerView = /** @class */ (function (_super) {
             width: 200,
             height: 200,
             offset: {
-                left: 30,
-                top: 50,
+                // left: 30,
+                // top: 50,
+                left: 100,
+                top: 150,
             },
         };
         // 服务器大小
@@ -546,11 +548,11 @@ var ServerView = /** @class */ (function (_super) {
         _this.initRender = function () {
             var groups = _this.drawGroup(_this.sourceData, __assign({}, _this.groupBox), { type: 'sourceNode' }).groups;
             _this.clusterGroups = groups;
-            _this.linkObj(_this.clusterGroups[0][0], _this.clusterGroups[1][0], false, true, 1);
-            _this.linkObj(_this.clusterGroups[0][0], _this.clusterGroups[1][0], true, true, 2);
+            _this.linkObj(_this.clusterGroups[0][0], _this.clusterGroups[1][0], false, true);
+            _this.linkObj(_this.clusterGroups[0][0], _this.clusterGroups[1][0], true, true);
         };
         /** 创建链接关系 */
-        _this.linkObj = function (fromObj, toObj, fromArrows, toArrows, index) {
+        _this.linkObj = function (fromObj, toObj, fromArrows, toArrows) {
             var pathConfig = {
                 fromX: fromObj.left + fromObj.width,
                 fromY: fromObj.top + _this.clusterGroups[0][0].height / 2,
@@ -560,28 +562,13 @@ var ServerView = /** @class */ (function (_super) {
                 toArrows: toArrows,
             };
             var drapPath = _this.linkPath(pathConfig);
-            var Bezier = [];
-            drapPath.forEach(function (path) {
-                if (path.indexOf('Q') !== -1) {
-                    Bezier = path.split(' ');
-                }
-            });
             var path = _this.drawPath(drapPath.join(' '), {
                 fill: '',
                 stroke: '#000',
                 objectCaching: false,
             });
-            path.index = index;
-            path.isMouseInLine = function (mouse) {
-                var canvas = document.getElementById('an');
-                var ctx = canvas.getContext('2d');
-                ctx.beginPath();
-                ctx.moveTo(pathConfig.fromX, pathConfig.fromY);
-                ctx.quadraticCurveTo(Bezier[1], Bezier[2], pathConfig.toX, pathConfig.toY);
-                ctx.lineWidth = 10;
-                ctx.lineCap = 'round';
-                return ctx.isPointInStroke(mouse.x, mouse.y);
-            };
+            path.isMouseInLine = _this.verifyLink(pathConfig);
+            path.pathConfig = pathConfig;
             path.objs = {
                 fromObj: fromObj,
                 toObj: toObj,
@@ -600,6 +587,26 @@ var ServerView = /** @class */ (function (_super) {
             }
             _this.paths.push(path);
             _this.canvas.add(path);
+        };
+        // 生成校验点线函数
+        _this.verifyLink = function (pathConfig) {
+            var drapPath = _this.linkPath(pathConfig);
+            var Bezier = [];
+            drapPath.forEach(function (path) {
+                if (path.indexOf('Q') !== -1) {
+                    Bezier = path.split(' ');
+                }
+            });
+            return function (mouse) {
+                var canvas = document.getElementById('an');
+                var ctx = canvas.getContext('2d');
+                ctx.beginPath();
+                ctx.moveTo(pathConfig.fromX, pathConfig.fromY);
+                ctx.quadraticCurveTo(Bezier[1], Bezier[2], pathConfig.toX, pathConfig.toY);
+                ctx.lineWidth = 20;
+                ctx.lineCap = 'round';
+                return ctx.isPointInStroke(mouse.x, mouse.y);
+            };
         };
         /** 计算集群 Box */
         _this.computeBox = function (options) {
@@ -774,11 +781,40 @@ var ServerView = /** @class */ (function (_super) {
                     _this.drag = true;
                 }
                 _this.deActiveObject();
+                var activePath = false;
+                var canvas = document.getElementById('an');
+                var mouse = {
+                    x: e.e.clientX - canvas.getBoundingClientRect().left,
+                    y: e.e.clientY - canvas.getBoundingClientRect().top
+                };
+                _this.paths.forEach(function (path) {
+                    if (path.isMouseInLine(mouse)) {
+                        _this.deActiveObject();
+                        activePath = true;
+                        path.objs.fromObj.drawObj.cluster.set({
+                            stroke: 'rgba(255, 255, 0, .4)',
+                        });
+                        path.objs.toObj.drawObj.cluster.set({
+                            stroke: 'rgba(255, 255, 0, .4)',
+                        });
+                        path.set({
+                            fill: '',
+                            stroke: 'rgba(0, 0, 255, 0.4)',
+                        });
+                        _this.canvas.renderAll();
+                    }
+                });
+                if (activePath) {
+                    return;
+                }
                 if (e.target && e.target['drawObj']) {
-                    e.target['drawObj']['cluster'].set({
-                        stroke: 'rgba(255, 255, 0, .4)',
-                    });
                     (e.target.paths || []).forEach(function (path) {
+                        path.objs.fromObj.drawObj.cluster.set({
+                            stroke: 'rgba(255, 255, 0, .4)',
+                        });
+                        path.objs.toObj.drawObj.cluster.set({
+                            stroke: 'rgba(255, 255, 0, .4)',
+                        });
                         path.set({
                             fill: '',
                             stroke: 'rgba(0, 0, 255, 0.4)',
@@ -850,28 +886,6 @@ var ServerView = /** @class */ (function (_super) {
                     _this.lastPos.x = e.e.clientX;
                     _this.lastPos.y = e.e.clientY;
                 }
-                var canvas = document.getElementById('an');
-                var mouse = {
-                    x: e.e.clientX - canvas.getBoundingClientRect().left,
-                    y: e.e.clientY - canvas.getBoundingClientRect().top
-                };
-                _this.paths.forEach(function (path) {
-                    var isMouseInLine = path.isMouseInLine(mouse);
-                    if (isMouseInLine) {
-                        _this.deActiveObject();
-                        path.objs.fromObj.drawObj.cluster.set({
-                            stroke: 'rgba(255, 255, 0, .4)',
-                        });
-                        path.objs.toObj.drawObj.cluster.set({
-                            stroke: 'rgba(255, 255, 0, .4)',
-                        });
-                        path.set({
-                            fill: '',
-                            stroke: 'rgba(0, 0, 255, 0.4)',
-                        });
-                        _this.canvas.renderAll();
-                    }
-                });
             },
             'object:moving': function (e) {
                 (e.target.paths || []).forEach(function (path) {
@@ -881,14 +895,16 @@ var ServerView = /** @class */ (function (_super) {
                         fromY: fromObj.top + _this.clusterGroups[0][0].height / 2,
                         toX: toObj.left + toObj.width,
                         toY: toObj.top + toObj.height / 2,
-                        fromArrows: true,
-                        toArrows: true,
+                        fromArrows: path.pathConfig.fromArrows,
+                        toArrows: path.pathConfig.toArrows,
                     };
                     var pathObject = new fabric_1.fabric.Path(_this.linkPath(pathConfig).join(' '));
+                    path.pathConfig = pathConfig;
+                    path.isMouseInLine = _this.verifyLink(pathConfig);
                     path.set({
                         path: pathObject.path,
                         fill: '',
-                        stroke: '#000',
+                        stroke: 'rgba(0, 0, 255, 0.4)',
                         objectCaching: false,
                     });
                 });

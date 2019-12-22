@@ -180,8 +180,10 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         width: 200,
         height: 200,
         offset: {
-            left: 30,
-            top: 50,
+            // left: 30,
+            // top: 50,
+            left: 100,
+            top: 150,
         },
 
     };
@@ -298,13 +300,20 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         );
         this.clusterGroups = groups;
 
-        this.linkObj(this.clusterGroups[0][0], this.clusterGroups[1][0], false, true, 1);
-        this.linkObj(this.clusterGroups[0][0], this.clusterGroups[1][0], true, true, 2);
+        this.linkObj(this.clusterGroups[0][0], this.clusterGroups[1][0], false, true);
+        this.linkObj(this.clusterGroups[0][0], this.clusterGroups[1][0], true, true);
     }
 
     /** 创建链接关系 */
-    private linkObj = (fromObj: any, toObj: any, fromArrows: boolean, toArrows: boolean, index: number) => {
-        const pathConfig = {
+    private linkObj = (fromObj: any, toObj: any, fromArrows: boolean, toArrows: boolean) => {
+        const pathConfig: {
+            fromX: any;
+            fromY: any;
+            toX: any;
+            toY: any;
+            fromArrows: boolean;
+            toArrows: boolean;
+        } = {
             fromX: fromObj.left + fromObj.width,
             fromY: fromObj.top + this.clusterGroups[0][0].height / 2,
             toX: toObj.left + toObj.width,
@@ -313,12 +322,6 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             toArrows,
         };
         const drapPath = this.linkPath(pathConfig);
-        let Bezier = [];
-        drapPath.forEach(path => {
-            if (path.indexOf('Q') !== -1) {
-                Bezier = path.split(' ');
-            }
-        });
 
         const path: any = this.drawPath(
             drapPath.join(' '),
@@ -329,19 +332,9 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             }
         );
 
-        path.index = index;
-        path.isMouseInLine = (mouse: { x: number, y: number }) => {
-            const canvas: any = document.getElementById('an');
-            const ctx = canvas.getContext('2d');
+        path.isMouseInLine = this.verifyLink(pathConfig);
 
-            ctx.beginPath();
-            ctx.moveTo(pathConfig.fromX, pathConfig.fromY);
-            ctx.quadraticCurveTo(Bezier[1], Bezier[2], pathConfig.toX, pathConfig.toY);
-            ctx.lineWidth = 10;
-            ctx.lineCap = 'round';
-
-            return ctx.isPointInStroke(mouse.x, mouse.y)
-        }
+        path.pathConfig = pathConfig;
 
         path.objs = {
             fromObj,
@@ -365,6 +358,38 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         this.canvas.add(path);
     }
 
+    // 生成校验点线函数
+    private verifyLink = (pathConfig: {
+        fromX: any;
+        fromY: any;
+        toX: any;
+        toY: any;
+        fromArrows: boolean;
+        toArrows: boolean;
+    }) => {
+        const drapPath = this.linkPath(pathConfig);
+
+        let Bezier = [];
+        drapPath.forEach(path => {
+            if (path.indexOf('Q') !== -1) {
+                Bezier = path.split(' ');
+            }
+        });
+
+        return (mouse: { x: number, y: number }) => {
+            const canvas: any = document.getElementById('an');
+            const ctx = canvas.getContext('2d');
+
+            ctx.beginPath();
+            ctx.moveTo(pathConfig.fromX, pathConfig.fromY);
+            ctx.quadraticCurveTo(Bezier[1], Bezier[2], pathConfig.toX, pathConfig.toY);
+            ctx.lineWidth = 20;
+            ctx.lineCap = 'round';
+
+            return ctx.isPointInStroke(mouse.x, mouse.y)
+        }
+    }
+
     /**
      * canvas 事件监听
      */
@@ -385,11 +410,46 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 }
 
                 this.deActiveObject();
+
+                let activePath = false;
+
+                const canvas: any = document.getElementById('an');
+
+                var mouse = {
+                    x: e.e.clientX - canvas.getBoundingClientRect().left,
+                    y: e.e.clientY - canvas.getBoundingClientRect().top
+                };
+
+                this.paths.forEach((path: any) => {
+                    if (path.isMouseInLine(mouse)) {
+                        this.deActiveObject();
+                        activePath = true;
+                        path.objs.fromObj.drawObj.cluster.set({
+                            stroke: 'rgba(255, 255, 0, .4)',
+                        });
+                        path.objs.toObj.drawObj.cluster.set({
+                            stroke: 'rgba(255, 255, 0, .4)',
+                        });
+                        path.set({
+                            fill: '',
+                            stroke: 'rgba(0, 0, 255, 0.4)',
+                        });
+                        this.canvas.renderAll();
+                    }
+                });
+
+                if (activePath) {
+                    return;
+                }
+
                 if (e.target && e.target['drawObj']) {
-                    e.target['drawObj']['cluster'].set({
-                        stroke: 'rgba(255, 255, 0, .4)',
-                    });
                     (e.target.paths || []).forEach((path: any) => {
+                        path.objs.fromObj.drawObj.cluster.set({
+                            stroke: 'rgba(255, 255, 0, .4)',
+                        });
+                        path.objs.toObj.drawObj.cluster.set({
+                            stroke: 'rgba(255, 255, 0, .4)',
+                        });
                         path.set({
                             fill: '',
                             stroke: 'rgba(0, 0, 255, 0.4)',
@@ -476,31 +536,6 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                     this.lastPos.x = e.e.clientX;
                     this.lastPos.y = e.e.clientY;
                 }
-
-                const canvas: any = document.getElementById('an');
-
-                var mouse = {
-                    x: e.e.clientX - canvas.getBoundingClientRect().left,
-                    y: e.e.clientY - canvas.getBoundingClientRect().top
-                };
-
-                this.paths.forEach((path: any) => {
-                    let isMouseInLine = path.isMouseInLine(mouse);
-                    if (isMouseInLine) {
-                        this.deActiveObject();
-                        path.objs.fromObj.drawObj.cluster.set({
-                            stroke: 'rgba(255, 255, 0, .4)',
-                        });
-                        path.objs.toObj.drawObj.cluster.set({
-                            stroke: 'rgba(255, 255, 0, .4)',
-                        });
-                        path.set({
-                            fill: '',
-                            stroke: 'rgba(0, 0, 255, 0.4)',
-                        });
-                        this.canvas.renderAll();
-                    }
-                });
             },
             'object:moving': (e: fabric.IEvent | any) => {
                 (e.target.paths || []).forEach((path: any) => {
@@ -510,15 +545,18 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                         fromY: fromObj.top + this.clusterGroups[0][0].height / 2,
                         toX: toObj.left + toObj.width,
                         toY: toObj.top + toObj.height / 2,
-                        fromArrows: true,
-                        toArrows: true,
+                        fromArrows: path.pathConfig.fromArrows,
+                        toArrows: path.pathConfig.toArrows,
                     };
                     var pathObject = new fabric.Path(this.linkPath(pathConfig).join(' '));
+
+                    path.pathConfig = pathConfig;
+                    path.isMouseInLine = this.verifyLink(pathConfig);
 
                     path.set({
                         path: pathObject.path,
                         fill: '',
-                        stroke: '#000',
+                        stroke: 'rgba(0, 0, 255, 0.4)',
                         objectCaching: false,
                     });
                 });
