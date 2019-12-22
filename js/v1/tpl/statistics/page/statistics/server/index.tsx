@@ -163,7 +163,8 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
     ];
 
     private clusterGroups: Array<Array<fabric.Group>> = [];
-    private openCluster: any[] = [{ id: 1 }];
+    // private openCluster: any[] = [{ id: 1 }];
+    private openCluster: any[] = [];
 
     // 画布缩放比例
     private zoom: number = 1;
@@ -193,8 +194,8 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         width: 50,
         height: 50,
         offset: {
-            left: 20,
-            top: 70,
+            left: 10,
+            top: 30,
         },
     };
 
@@ -300,8 +301,35 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         );
         this.clusterGroups = groups;
 
-        this.linkObj(this.clusterGroups[0][0], this.clusterGroups[1][0], false, true);
-        this.linkObj(this.clusterGroups[0][0], this.clusterGroups[1][0], true, false);
+        this.linkObj(this.clusterGroups[0][1], this.clusterGroups[1][2], false, true);
+        this.linkObj(this.clusterGroups[0][1], this.clusterGroups[1][2], true, false);
+    }
+
+    // 计算 path config
+    private computePathConfig = (fromObj: any, toObj: any, fromArrows: boolean, toArrows: boolean) => {
+        const computeXY = (obj: any, comparisonObj: any) => {
+            const offsetLeft = obj.left - comparisonObj.left;
+            const offsetTop = obj.top - comparisonObj.top;
+
+            return {
+                x: offsetLeft < -(comparisonObj.width) ? obj.left + obj.width :
+                    offsetLeft > comparisonObj.width ? obj.left : obj.left + obj.width / 2,
+                y: offsetTop < -(comparisonObj.height) ? obj.top + obj.height - 20 :
+                    offsetTop > comparisonObj.height ? obj.top : obj.top + (obj.height - 20) / 2,
+            };
+        }
+
+        const fromXY = computeXY(fromObj, toObj);
+        const toXY = computeXY(toObj, fromObj);
+
+        return {
+            fromX: fromXY.x,
+            fromY: fromXY.y,
+            toX: toXY.x,
+            toY: toXY.y,
+            fromArrows,
+            toArrows,
+        };
     }
 
     /** 创建链接关系 */
@@ -313,14 +341,8 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             toY: any;
             fromArrows: boolean;
             toArrows: boolean;
-        } = {
-            fromX: fromObj.left + fromObj.width,
-            fromY: fromObj.top + this.clusterGroups[0][0].height / 2,
-            toX: toObj.left + toObj.width,
-            toY: toObj.top + toObj.height / 2,
-            fromArrows,
-            toArrows,
-        };
+        } = this.computePathConfig(fromObj, toObj, fromArrows, toArrows);
+
         const drapPath = this.linkPath(pathConfig);
 
         const path: any = this.drawPath(
@@ -611,14 +633,12 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             'object:moving': (e: fabric.IEvent | any) => {
                 (e.target.paths || []).forEach((path: any) => {
                     const { fromObj, toObj } = path.objs;
-                    const pathConfig = {
-                        fromX: fromObj.left + fromObj.width,
-                        fromY: fromObj.top + this.clusterGroups[0][0].height / 2,
-                        toX: toObj.left + toObj.width,
-                        toY: toObj.top + toObj.height / 2,
-                        fromArrows: path.pathConfig.fromArrows,
-                        toArrows: path.pathConfig.toArrows,
-                    };
+                    const pathConfig = this.computePathConfig(
+                        fromObj,
+                        toObj,
+                        path.pathConfig.fromArrows,
+                        path.pathConfig.toArrows);
+
                     var pathObject = new fabric.Path(this.linkPath(pathConfig).join(' '));
 
                     path.pathConfig = pathConfig;

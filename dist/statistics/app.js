@@ -490,7 +490,8 @@ var ServerView = /** @class */ (function (_super) {
             ],
         ];
         _this.clusterGroups = [];
-        _this.openCluster = [{ id: 1 }];
+        // private openCluster: any[] = [{ id: 1 }];
+        _this.openCluster = [];
         // 画布缩放比例
         _this.zoom = 1;
         _this.max_zoom = 10;
@@ -515,8 +516,8 @@ var ServerView = /** @class */ (function (_super) {
             width: 50,
             height: 50,
             offset: {
-                left: 20,
-                top: 70,
+                left: 10,
+                top: 30,
             },
         };
         // 图片url
@@ -548,19 +549,35 @@ var ServerView = /** @class */ (function (_super) {
         _this.initRender = function () {
             var groups = _this.drawGroup(_this.sourceData, __assign({}, _this.groupBox), { type: 'sourceNode' }).groups;
             _this.clusterGroups = groups;
-            _this.linkObj(_this.clusterGroups[0][0], _this.clusterGroups[1][0], false, true);
-            _this.linkObj(_this.clusterGroups[0][0], _this.clusterGroups[1][0], true, false);
+            _this.linkObj(_this.clusterGroups[0][1], _this.clusterGroups[1][2], false, true);
+            _this.linkObj(_this.clusterGroups[0][1], _this.clusterGroups[1][2], true, false);
         };
-        /** 创建链接关系 */
-        _this.linkObj = function (fromObj, toObj, fromArrows, toArrows) {
-            var pathConfig = {
-                fromX: fromObj.left + fromObj.width,
-                fromY: fromObj.top + _this.clusterGroups[0][0].height / 2,
-                toX: toObj.left + toObj.width,
-                toY: toObj.top + toObj.height / 2,
+        // 计算 path config
+        _this.computePathConfig = function (fromObj, toObj, fromArrows, toArrows) {
+            var computeXY = function (obj, comparisonObj) {
+                var offsetLeft = obj.left - comparisonObj.left;
+                var offsetTop = obj.top - comparisonObj.top;
+                return {
+                    x: offsetLeft < -(comparisonObj.width) ? obj.left + obj.width :
+                        offsetLeft > comparisonObj.width ? obj.left : obj.left + obj.width / 2,
+                    y: offsetTop < -(comparisonObj.height) ? obj.top + obj.height - 20 :
+                        offsetTop > comparisonObj.height ? obj.top : obj.top + (obj.height - 20) / 2,
+                };
+            };
+            var fromXY = computeXY(fromObj, toObj);
+            var toXY = computeXY(toObj, fromObj);
+            return {
+                fromX: fromXY.x,
+                fromY: fromXY.y,
+                toX: toXY.x,
+                toY: toXY.y,
                 fromArrows: fromArrows,
                 toArrows: toArrows,
             };
+        };
+        /** 创建链接关系 */
+        _this.linkObj = function (fromObj, toObj, fromArrows, toArrows) {
+            var pathConfig = _this.computePathConfig(fromObj, toObj, fromArrows, toArrows);
             var drapPath = _this.linkPath(pathConfig);
             var path = _this.drawPath(drapPath.join(' '), {
                 fill: '',
@@ -948,14 +965,7 @@ var ServerView = /** @class */ (function (_super) {
             'object:moving': function (e) {
                 (e.target.paths || []).forEach(function (path) {
                     var _a = path.objs, fromObj = _a.fromObj, toObj = _a.toObj;
-                    var pathConfig = {
-                        fromX: fromObj.left + fromObj.width,
-                        fromY: fromObj.top + _this.clusterGroups[0][0].height / 2,
-                        toX: toObj.left + toObj.width,
-                        toY: toObj.top + toObj.height / 2,
-                        fromArrows: path.pathConfig.fromArrows,
-                        toArrows: path.pathConfig.toArrows,
-                    };
+                    var pathConfig = _this.computePathConfig(fromObj, toObj, path.pathConfig.fromArrows, path.pathConfig.toArrows);
                     var pathObject = new fabric_1.fabric.Path(_this.linkPath(pathConfig).join(' '));
                     path.pathConfig = pathConfig;
                     path.isMouseInLine = _this.verifyLink(pathConfig);
