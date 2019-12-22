@@ -598,17 +598,44 @@ var ServerView = /** @class */ (function (_super) {
                     Bezier = path.split(' ');
                 }
             });
-            var canvas = document.getElementById('an');
-            var ctx = canvas.getContext('2d');
+            var maxNumberX = Math.abs(pathConfig.fromX - pathConfig.toX);
+            var maxNumberY = Math.abs(pathConfig.fromY - pathConfig.toY);
+            var bezierPointe = [];
+            var maxNumber = maxNumberX > maxNumberX ? maxNumberX : maxNumberY;
+            for (var i = 0; i < maxNumber; i++) {
+                bezierPointe.push(_this.twoBezier(i / maxNumber, {
+                    x: pathConfig.fromX,
+                    y: pathConfig.fromY,
+                }, {
+                    x: Bezier[1],
+                    y: Bezier[2],
+                }, {
+                    x: pathConfig.toX,
+                    y: pathConfig.toY,
+                }));
+            }
             return function (mouse) {
-                ctx.beginPath();
-                ctx.moveTo(pathConfig.fromX, pathConfig.fromY);
-                ctx.quadraticCurveTo(Bezier[1], Bezier[2], pathConfig.toX, pathConfig.toY);
-                ctx.lineWidth = 10;
-                ctx.lineCap = 'round';
-                return ctx.isPointInStroke(mouse.x, mouse.y);
-                // return ctx.isPointInPath(mouse.x, mouse.y);
+                var exist = false;
+                bezierPointe.forEach(function (bp) {
+                    var x = mouse.x - bp.x;
+                    var y = mouse.y - bp.y;
+                    var distance = Math.sqrt(x * x + y * y);
+                    if (distance >= 0 && distance < 5) {
+                        exist = true;
+                    }
+                });
+                return exist;
             };
+            // const canvas: any = document.getElementById('an');
+            // const ctx = canvas.getContext('2d');
+            // return (mouse: { x: number, y: number }) => {
+            //     ctx.beginPath();
+            //     ctx.moveTo(pathConfig.fromX, pathConfig.fromY);
+            //     ctx.quadraticCurveTo(Bezier[1], Bezier[2], pathConfig.toX, pathConfig.toY);
+            //     ctx.lineWidth = 10;
+            //     ctx.lineCap = 'round';
+            //     return ctx.isPointInStroke(mouse.x, mouse.y);
+            // }
         };
         /** 计算集群 Box */
         _this.computeBox = function (options) {
@@ -763,6 +790,14 @@ var ServerView = /** @class */ (function (_super) {
         this.canvas.zoomToPoint(zoomPoint, zoom);
         this.zoom = zoom;
     };
+    ServerView.prototype.twoBezier = function (t, p1, cp, p2) {
+        var x1 = p1.x, y1 = p1.y;
+        var cx = cp.x, cy = cp.y;
+        var x2 = p2.x, y2 = p2.y;
+        var x = (1 - t) * (1 - t) * x1 + 2 * t * (1 - t) * cx + t * t * x2;
+        var y = (1 - t) * (1 - t) * y1 + 2 * t * (1 - t) * cy + t * t * y2;
+        return { x: x, y: y };
+    };
     /**
      * canvas 事件监听
      */
@@ -890,11 +925,9 @@ var ServerView = /** @class */ (function (_super) {
                     x: e.pointer.x,
                     y: e.pointer.y
                 };
-                var activePath = [];
                 _this.deActiveObject();
                 _this.paths.forEach(function (path) {
                     if (path.isMouseInLine(mouse)) {
-                        activePath.push(path.index);
                         path.objs.fromObj.drawObj.cluster.set({
                             stroke: 'rgba(255, 255, 0, .4)',
                         });
@@ -909,7 +942,6 @@ var ServerView = /** @class */ (function (_super) {
                         _this.canvas.renderAll();
                     }
                 });
-                console.log(activePath);
             },
             'object:moving': function (e) {
                 (e.target.paths || []).forEach(function (path) {

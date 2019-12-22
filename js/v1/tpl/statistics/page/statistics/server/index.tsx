@@ -360,6 +360,15 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         this.canvas.add(path);
     }
 
+    twoBezier(t: number, p1: { x: number, y: number }, cp: { x: number, y: number }, p2: { x: number, y: number }): { x: number, y: number } {
+        const { x: x1, y: y1 } = p1;
+        const { x: cx, y: cy } = cp;
+        const { x: x2, y: y2 } = p2;
+        const x = (1 - t) * (1 - t) * x1 + 2 * t * (1 - t) * cx + t * t * x2;
+        const y = (1 - t) * (1 - t) * y1 + 2 * t * (1 - t) * cy + t * t * y2;
+        return { x, y };
+    }
+
     // 生成校验点线函数
     private verifyLink = (pathConfig: {
         fromX: any;
@@ -369,6 +378,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         fromArrows: boolean;
         toArrows: boolean;
     }) => {
+
         const drapPath = this.linkPath(pathConfig);
 
         let Bezier = [];
@@ -377,20 +387,56 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 Bezier = path.split(' ');
             }
         });
+        const maxNumberX = Math.abs(pathConfig.fromX - pathConfig.toX);
+        const maxNumberY = Math.abs(pathConfig.fromY - pathConfig.toY);
 
-        const canvas: any = document.getElementById('an');
-        const ctx = canvas.getContext('2d');
+        const bezierPointe = [];
+        const maxNumber = maxNumberX > maxNumberX ? maxNumberX : maxNumberY;
+
+        for (let i = 0; i < maxNumber; i++) {
+            bezierPointe.push(this.twoBezier(
+                i / maxNumber,
+                {
+                    x: pathConfig.fromX,
+                    y: pathConfig.fromY,
+                },
+                {
+                    x: Bezier[1],
+                    y: Bezier[2],
+                },
+                {
+                    x: pathConfig.toX,
+                    y: pathConfig.toY,
+                },
+            ));
+        }
 
         return (mouse: { x: number, y: number }) => {
-            ctx.beginPath();
-            ctx.moveTo(pathConfig.fromX, pathConfig.fromY);
-            ctx.quadraticCurveTo(Bezier[1], Bezier[2], pathConfig.toX, pathConfig.toY);
-            ctx.lineWidth = 10;
-            ctx.lineCap = 'round';
+            let exist = false;
+            bezierPointe.forEach((bp: { x: number, y: number }) => {
+                const x = mouse.x - bp.x;
+                const y = mouse.y - bp.y;
+                const distance = Math.sqrt(x * x + y * y);
+                if (distance >= 0 && distance < 5) {
+                    exist = true;
+                }
+            });
 
-            return ctx.isPointInStroke(mouse.x, mouse.y);
-            // return ctx.isPointInPath(mouse.x, mouse.y);
-        }
+            return exist;
+        };
+
+        // const canvas: any = document.getElementById('an');
+        // const ctx = canvas.getContext('2d');
+
+        // return (mouse: { x: number, y: number }) => {
+        //     ctx.beginPath();
+        //     ctx.moveTo(pathConfig.fromX, pathConfig.fromY);
+        //     ctx.quadraticCurveTo(Bezier[1], Bezier[2], pathConfig.toX, pathConfig.toY);
+        //     ctx.lineWidth = 10;
+        //     ctx.lineCap = 'round';
+
+        //     return ctx.isPointInStroke(mouse.x, mouse.y);
+        // }
     }
 
     /**
@@ -542,11 +588,9 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                     y: e.pointer.y
                 };
 
-                let activePath = [];
                 this.deActiveObject();
                 this.paths.forEach((path: any) => {
                     if (path.isMouseInLine(mouse)) {
-                        activePath.push(path.index);
                         path.objs.fromObj.drawObj.cluster.set({
                             stroke: 'rgba(255, 255, 0, .4)',
                         });
@@ -561,7 +605,6 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                         this.canvas.renderAll();
                     }
                 });
-                console.log(activePath);
             },
             'object:moving': (e: fabric.IEvent | any) => {
                 (e.target.paths || []).forEach((path: any) => {
