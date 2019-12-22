@@ -784,13 +784,11 @@ var ServerView = /** @class */ (function (_super) {
                 }
                 _this.deActiveObject();
                 var activePath = false;
-                var canvas = document.getElementById('an');
                 var mouse = {
-                    x: e.e.clientX - canvas.getBoundingClientRect().left,
-                    y: e.e.clientY - canvas.getBoundingClientRect().top
+                    x: e.pointer.x,
+                    y: e.pointer.y
                 };
                 _this.paths.forEach(function (path) {
-                    console.log(path.isMouseInLine(mouse));
                     if (path.isMouseInLine(mouse)) {
                         _this.deActiveObject();
                         activePath = true;
@@ -889,10 +887,9 @@ var ServerView = /** @class */ (function (_super) {
                     _this.lastPos.x = e.e.clientX;
                     _this.lastPos.y = e.e.clientY;
                 }
-                var canvas = document.getElementById('an');
                 var mouse = {
-                    x: e.e.clientX - canvas.getBoundingClientRect().left,
-                    y: e.e.clientY - canvas.getBoundingClientRect().top
+                    x: e.pointer.x,
+                    y: e.pointer.y
                 };
                 var activePath = [];
                 _this.deActiveObject();

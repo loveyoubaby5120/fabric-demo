@@ -416,15 +416,12 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
 
                 let activePath = false;
 
-                const canvas: any = document.getElementById('an');
-
                 var mouse = {
-                    x: e.e.clientX - canvas.getBoundingClientRect().left,
-                    y: e.e.clientY - canvas.getBoundingClientRect().top
+                    x: e.pointer.x,
+                    y: e.pointer.y
                 };
 
                 this.paths.forEach((path: any) => {
-                    console.log(path.isMouseInLine(mouse));
                     if (path.isMouseInLine(mouse)) {
                         this.deActiveObject();
                         activePath = true;
@@ -541,13 +538,11 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                     this.lastPos.y = e.e.clientY;
                 }
 
-
-                const canvas: any = document.getElementById('an');
-
                 var mouse = {
-                    x: e.e.clientX - canvas.getBoundingClientRect().left,
-                    y: e.e.clientY - canvas.getBoundingClientRect().top
+                    x: e.pointer.x,
+                    y: e.pointer.y
                 };
+
                 let activePath = [];
                 this.deActiveObject();
                 this.paths.forEach((path: any) => {
