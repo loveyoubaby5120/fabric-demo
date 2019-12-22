@@ -414,8 +414,8 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         return (mouse: { x: number, y: number }) => {
             let exist = false;
             bezierPointe.forEach((bp: { x: number, y: number }) => {
-                const x = mouse.x - bp.x;
-                const y = mouse.y - bp.y;
+                const x = mouse.x - bp.x * this.zoom;
+                const y = mouse.y - bp.y * this.zoom;
                 const distance = Math.sqrt(x * x + y * y);
                 if (distance >= 0 && distance < 5) {
                     exist = true;
@@ -571,9 +571,8 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 });
             },
             'mouse:move': (e: fabric.IEvent | any) => {
+                const vpt = this.canvas.viewportTransform;
                 if (this.drag) {
-                    const vpt = this.canvas.viewportTransform;
-
                     this.canvas.setViewportTransform([
                         ...vpt.slice(0, 4),
                         vpt[4] + e.e.clientX - this.lastPos.x,
@@ -584,8 +583,8 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 }
 
                 var mouse = {
-                    x: e.pointer.x,
-                    y: e.pointer.y
+                    x: e.pointer.x - vpt[4],
+                    y: e.pointer.y - vpt[5],
                 };
 
                 this.deActiveObject();

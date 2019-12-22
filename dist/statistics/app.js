@@ -617,8 +617,8 @@ var ServerView = /** @class */ (function (_super) {
             return function (mouse) {
                 var exist = false;
                 bezierPointe.forEach(function (bp) {
-                    var x = mouse.x - bp.x;
-                    var y = mouse.y - bp.y;
+                    var x = mouse.x - bp.x * _this.zoom;
+                    var y = mouse.y - bp.y * _this.zoom;
                     var distance = Math.sqrt(x * x + y * y);
                     if (distance >= 0 && distance < 5) {
                         exist = true;
@@ -912,8 +912,8 @@ var ServerView = /** @class */ (function (_super) {
                 });
             },
             'mouse:move': function (e) {
+                var vpt = _this.canvas.viewportTransform;
                 if (_this.drag) {
-                    var vpt = _this.canvas.viewportTransform;
                     _this.canvas.setViewportTransform(vpt.slice(0, 4).concat([
                         vpt[4] + e.e.clientX - _this.lastPos.x,
                         vpt[5] + e.e.clientY - _this.lastPos.y,
@@ -922,8 +922,8 @@ var ServerView = /** @class */ (function (_super) {
                     _this.lastPos.y = e.e.clientY;
                 }
                 var mouse = {
-                    x: e.pointer.x,
-                    y: e.pointer.y
+                    x: e.pointer.x - vpt[4],
+                    y: e.pointer.y - vpt[5],
                 };
                 _this.deActiveObject();
                 _this.paths.forEach(function (path) {
