@@ -301,7 +301,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         this.clusterGroups = groups;
 
         this.linkObj(this.clusterGroups[0][0], this.clusterGroups[1][0], false, true);
-        this.linkObj(this.clusterGroups[0][0], this.clusterGroups[1][0], true, true);
+        this.linkObj(this.clusterGroups[0][0], this.clusterGroups[1][0], true, false);
     }
 
     /** 创建链接关系 */
@@ -333,6 +333,8 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         );
 
         path.isMouseInLine = this.verifyLink(pathConfig);
+
+        path.index = this.paths.length;
 
         path.pathConfig = pathConfig;
 
@@ -376,17 +378,18 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             }
         });
 
-        return (mouse: { x: number, y: number }) => {
-            const canvas: any = document.getElementById('an');
-            const ctx = canvas.getContext('2d');
+        const canvas: any = document.getElementById('an');
+        const ctx = canvas.getContext('2d');
 
+        return (mouse: { x: number, y: number }) => {
             ctx.beginPath();
             ctx.moveTo(pathConfig.fromX, pathConfig.fromY);
             ctx.quadraticCurveTo(Bezier[1], Bezier[2], pathConfig.toX, pathConfig.toY);
-            ctx.lineWidth = 20;
+            ctx.lineWidth = 10;
             ctx.lineCap = 'round';
 
-            return ctx.isPointInStroke(mouse.x, mouse.y)
+            return ctx.isPointInStroke(mouse.x, mouse.y);
+            // return ctx.isPointInPath(mouse.x, mouse.y);
         }
     }
 
@@ -421,6 +424,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 };
 
                 this.paths.forEach((path: any) => {
+                    console.log(path.isMouseInLine(mouse));
                     if (path.isMouseInLine(mouse)) {
                         this.deActiveObject();
                         activePath = true;
@@ -536,6 +540,34 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                     this.lastPos.x = e.e.clientX;
                     this.lastPos.y = e.e.clientY;
                 }
+
+
+                const canvas: any = document.getElementById('an');
+
+                var mouse = {
+                    x: e.e.clientX - canvas.getBoundingClientRect().left,
+                    y: e.e.clientY - canvas.getBoundingClientRect().top
+                };
+                let activePath = [];
+                this.deActiveObject();
+                this.paths.forEach((path: any) => {
+                    if (path.isMouseInLine(mouse)) {
+                        activePath.push(path.index);
+                        path.objs.fromObj.drawObj.cluster.set({
+                            stroke: 'rgba(255, 255, 0, .4)',
+                        });
+                        path.objs.toObj.drawObj.cluster.set({
+                            stroke: 'rgba(255, 255, 0, .4)',
+                        });
+                        path.set({
+                            fill: '',
+                            stroke: 'rgba(0, 0, 255, 0.4)',
+                            objectCaching: false,
+                        });
+                        this.canvas.renderAll();
+                    }
+                });
+                console.log(activePath);
             },
             'object:moving': (e: fabric.IEvent | any) => {
                 (e.target.paths || []).forEach((path: any) => {
@@ -928,7 +960,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             toY: pathConfig.fromY,
         })) : [];
 
-        const q = `Q ${(pathConfig.fromX + pathConfig.toX) / 2 + offset} ${(pathConfig.fromY + pathConfig.toY) / 2}`
+        const q = `Q ${(pathConfig.fromX + pathConfig.toX) / 2 + offset} ${(pathConfig.fromY + pathConfig.toY) / 2}`;
 
         return [
             ...arrows,

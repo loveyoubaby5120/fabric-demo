@@ -549,7 +549,7 @@ var ServerView = /** @class */ (function (_super) {
             var groups = _this.drawGroup(_this.sourceData, __assign({}, _this.groupBox), { type: 'sourceNode' }).groups;
             _this.clusterGroups = groups;
             _this.linkObj(_this.clusterGroups[0][0], _this.clusterGroups[1][0], false, true);
-            _this.linkObj(_this.clusterGroups[0][0], _this.clusterGroups[1][0], true, true);
+            _this.linkObj(_this.clusterGroups[0][0], _this.clusterGroups[1][0], true, false);
         };
         /** 创建链接关系 */
         _this.linkObj = function (fromObj, toObj, fromArrows, toArrows) {
@@ -568,6 +568,7 @@ var ServerView = /** @class */ (function (_super) {
                 objectCaching: false,
             });
             path.isMouseInLine = _this.verifyLink(pathConfig);
+            path.index = _this.paths.length;
             path.pathConfig = pathConfig;
             path.objs = {
                 fromObj: fromObj,
@@ -597,15 +598,16 @@ var ServerView = /** @class */ (function (_super) {
                     Bezier = path.split(' ');
                 }
             });
+            var canvas = document.getElementById('an');
+            var ctx = canvas.getContext('2d');
             return function (mouse) {
-                var canvas = document.getElementById('an');
-                var ctx = canvas.getContext('2d');
                 ctx.beginPath();
                 ctx.moveTo(pathConfig.fromX, pathConfig.fromY);
                 ctx.quadraticCurveTo(Bezier[1], Bezier[2], pathConfig.toX, pathConfig.toY);
-                ctx.lineWidth = 20;
+                ctx.lineWidth = 10;
                 ctx.lineCap = 'round';
                 return ctx.isPointInStroke(mouse.x, mouse.y);
+                // return ctx.isPointInPath(mouse.x, mouse.y);
             };
         };
         /** 计算集群 Box */
@@ -788,6 +790,7 @@ var ServerView = /** @class */ (function (_super) {
                     y: e.e.clientY - canvas.getBoundingClientRect().top
                 };
                 _this.paths.forEach(function (path) {
+                    console.log(path.isMouseInLine(mouse));
                     if (path.isMouseInLine(mouse)) {
                         _this.deActiveObject();
                         activePath = true;
@@ -886,6 +889,31 @@ var ServerView = /** @class */ (function (_super) {
                     _this.lastPos.x = e.e.clientX;
                     _this.lastPos.y = e.e.clientY;
                 }
+                var canvas = document.getElementById('an');
+                var mouse = {
+                    x: e.e.clientX - canvas.getBoundingClientRect().left,
+                    y: e.e.clientY - canvas.getBoundingClientRect().top
+                };
+                var activePath = [];
+                _this.deActiveObject();
+                _this.paths.forEach(function (path) {
+                    if (path.isMouseInLine(mouse)) {
+                        activePath.push(path.index);
+                        path.objs.fromObj.drawObj.cluster.set({
+                            stroke: 'rgba(255, 255, 0, .4)',
+                        });
+                        path.objs.toObj.drawObj.cluster.set({
+                            stroke: 'rgba(255, 255, 0, .4)',
+                        });
+                        path.set({
+                            fill: '',
+                            stroke: 'rgba(0, 0, 255, 0.4)',
+                            objectCaching: false,
+                        });
+                        _this.canvas.renderAll();
+                    }
+                });
+                console.log(activePath);
             },
             'object:moving': function (e) {
                 (e.target.paths || []).forEach(function (path) {
