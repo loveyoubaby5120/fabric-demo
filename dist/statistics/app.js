@@ -783,15 +783,14 @@ var ServerView = /** @class */ (function (_super) {
                     _this.drag = true;
                 }
                 _this.deActiveObject();
-                var activePath = false;
+                var activePath = [];
                 var mouse = {
                     x: e.pointer.x,
                     y: e.pointer.y
                 };
                 _this.paths.forEach(function (path) {
                     if (path.isMouseInLine(mouse)) {
-                        _this.deActiveObject();
-                        activePath = true;
+                        activePath.push(path.index);
                         path.objs.fromObj.drawObj.cluster.set({
                             stroke: 'rgba(255, 255, 0, .4)',
                         });
@@ -805,7 +804,7 @@ var ServerView = /** @class */ (function (_super) {
                         _this.canvas.renderAll();
                     }
                 });
-                if (activePath) {
+                if (activePath.length > 0) {
                     return;
                 }
                 if (e.target && e.target['drawObj']) {

@@ -414,7 +414,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
 
                 this.deActiveObject();
 
-                let activePath = false;
+                let activePath = [];
 
                 var mouse = {
                     x: e.pointer.x,
@@ -423,8 +423,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
 
                 this.paths.forEach((path: any) => {
                     if (path.isMouseInLine(mouse)) {
-                        this.deActiveObject();
-                        activePath = true;
+                        activePath.push(path.index);
                         path.objs.fromObj.drawObj.cluster.set({
                             stroke: 'rgba(255, 255, 0, .4)',
                         });
@@ -439,7 +438,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                     }
                 });
 
-                if (activePath) {
+                if (activePath.length > 0) {
                     return;
                 }
 
