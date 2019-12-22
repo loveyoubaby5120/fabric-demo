@@ -462,9 +462,11 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
 
                 let activePath = [];
 
+                const vpt = this.canvas.viewportTransform;
+
                 var mouse = {
-                    x: e.pointer.x,
-                    y: e.pointer.y
+                    x: e.pointer.x - vpt[4],
+                    y: e.pointer.y - vpt[5],
                 };
 
                 this.paths.forEach((path: any) => {
@@ -485,6 +487,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 });
 
                 if (activePath.length > 0) {
+                    console.log(activePath);
                     return;
                 }
 

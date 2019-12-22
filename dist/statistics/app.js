@@ -819,9 +819,10 @@ var ServerView = /** @class */ (function (_super) {
                 }
                 _this.deActiveObject();
                 var activePath = [];
+                var vpt = _this.canvas.viewportTransform;
                 var mouse = {
-                    x: e.pointer.x,
-                    y: e.pointer.y
+                    x: e.pointer.x - vpt[4],
+                    y: e.pointer.y - vpt[5],
                 };
                 _this.paths.forEach(function (path) {
                     if (path.isMouseInLine(mouse)) {
@@ -840,6 +841,7 @@ var ServerView = /** @class */ (function (_super) {
                     }
                 });
                 if (activePath.length > 0) {
+                    console.log(activePath);
                     return;
                 }
                 if (e.target && e.target['drawObj']) {
