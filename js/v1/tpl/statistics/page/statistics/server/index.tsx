@@ -295,7 +295,8 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         const { groups } = this.drawGroup(
             this.sourceData,
             { ...this.groupBox },
-            { type: 'sourceNode' }
+            { type: 'sourceNode' },
+            [{ left: 100 }, { left: 200 }, { left: 300 }, { left: 400 }, { left: 500 }]
         );
         this.clusterGroups = groups;
 
@@ -725,11 +726,13 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         sourceData: any[],
         offset: IRectOptions,
         keys: { [key: string]: any },
+        center?: IRectOptions[],
     ): {
         groups: fabric.Group[][];
         groupBox: { top?: number, left?: number, height: number, width: number };
     } {
         let initTop = offset.top;
+        let left = center && center[0] && center[0].left || offset.left;
 
         const groupBox = {
             width: 0,
@@ -753,9 +756,11 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                     width: offset.width,
                     height: offset.height,
                     top: offset.top + subOffset.top,
-                    left: offset.left + subOffset.left,
+                    left: left + subOffset.left
                 },
                 keys);
+
+            left = center && center[i + 1] && center[i + 1].left || offset.left;
 
             offset.top = offset.top + objGroupBox.height + this.groupBox.offset.top;
             groupBox.width = objGroupBox.sumWidth > groupBox.width ? objGroupBox.sumWidth : groupBox.width;
@@ -767,7 +772,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         return {
             groups,
             groupBox: {
-                width: groupBox.width - offset.left + subOffset.left,
+                width: groupBox.width - left + subOffset.left,
                 height: groupBox.height - initTop,
             }
         };

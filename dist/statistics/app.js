@@ -545,7 +545,7 @@ var ServerView = /** @class */ (function (_super) {
             e.stopPropagation();
         };
         _this.initRender = function () {
-            var groups = _this.drawGroup(_this.sourceData, __assign({}, _this.groupBox), { type: 'sourceNode' }).groups;
+            var groups = _this.drawGroup(_this.sourceData, __assign({}, _this.groupBox), { type: 'sourceNode' }, [{ left: 100 }, { left: 200 }, { left: 300 }, { left: 400 }, { left: 500 }]).groups;
             _this.clusterGroups = groups;
             _this.linkObj(_this.clusterGroups[0][1], _this.clusterGroups[1][2], false, true);
             _this.linkObj(_this.clusterGroups[0][1], _this.clusterGroups[1][2], true, false);
@@ -1043,9 +1043,10 @@ var ServerView = /** @class */ (function (_super) {
         });
     };
     /** 渲染组 */
-    ServerView.prototype.drawGroup = function (sourceData, offset, keys) {
+    ServerView.prototype.drawGroup = function (sourceData, offset, keys, center) {
         var _this = this;
         var initTop = offset.top;
+        var left = center && center[0] && center[0].left || offset.left;
         var groupBox = {
             width: 0,
             height: 0,
@@ -1063,8 +1064,9 @@ var ServerView = /** @class */ (function (_super) {
                 width: offset.width,
                 height: offset.height,
                 top: offset.top + subOffset.top,
-                left: offset.left + subOffset.left,
+                left: left + subOffset.left
             }, keys), objGroup = _a.objGroup, objGroupBox = _a.objGroupBox;
+            left = center && center[i + 1] && center[i + 1].left || offset.left;
             offset.top = offset.top + objGroupBox.height + _this.groupBox.offset.top;
             groupBox.width = objGroupBox.sumWidth > groupBox.width ? objGroupBox.sumWidth : groupBox.width;
             groupBox.height = objGroupBox.sumHeight > groupBox.height ? objGroupBox.sumHeight : groupBox.height;
@@ -1073,7 +1075,7 @@ var ServerView = /** @class */ (function (_super) {
         return {
             groups: groups,
             groupBox: {
-                width: groupBox.width - offset.left + subOffset.left,
+                width: groupBox.width - left + subOffset.left,
                 height: groupBox.height - initTop,
             }
         };
