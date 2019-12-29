@@ -555,49 +555,35 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 // 位置：默认在对象前面
                 let position = 'left';
                 if (e.target.keys.type === 'subNode') {
-                    let clustersId: any;
-                    this.sourceData.forEach((groups: any) => {
-                        groups.forEach((clusters: any) => {
-                            (clusters.hostList || []).forEach((hostList: any) => {
-                                (hostList || []).forEach((cluster: any) => {
-                                    if (cluster.id && cluster.id === e.target.sourceData.id) {
-                                        clustersId = clusters.id;
-                                    }
+                    this.clusterGroups.forEach((groups: any) => {
+                        groups.forEach((cluster: any) => {
+                            if (e.target.keys.parentData.id === cluster.sourceData.id) {
+                                (cluster.drawObj.subsGroup || []).forEach((hostList: any) => {
+                                    (hostList || []).forEach((sub: any) => {
+                                        if (e.target.sourceData.id !== sub.sourceData.id) {
+                                            const subB = {
+                                                x: sub.left + sub.width / 2,
+                                                y: sub.top + sub.height / 2,
+                                            };
+                                            const x = clusterA.x - subB.x;
+                                            const y = clusterA.y - subB.y;
+
+                                            // 计算两个坐标点记录
+                                            const distance = Math.sqrt(x * x + y * y);
+
+                                            if (distance < minDistance) {
+                                                minDistance = distance;
+                                                minDistanceObj = sub;
+                                            }
+
+                                            // 判断前后
+                                            position = x > 0 ? 'right' : 'left';
+                                        }
+                                    });
                                 });
-                            });
+                            }
                         });
                     });
-                    if (clustersId) {
-                        this.clusterGroups.forEach((groups: any) => {
-                            groups.forEach((cluster: any) => {
-                                if (clustersId === cluster.sourceData.id) {
-                                    (cluster.drawObj.subsGroup || []).forEach((hostList: any) => {
-                                        (hostList || []).forEach((sub: any) => {
-                                            if (e.target.sourceData.id !== sub.sourceData.id) {
-                                                const subB = {
-                                                    x: sub.left + sub.width / 2,
-                                                    y: sub.top + sub.height / 2,
-                                                };
-                                                const x = clusterA.x - subB.x;
-                                                const y = clusterA.y - subB.y;
-
-                                                // 计算两个坐标点记录
-                                                const distance = Math.sqrt(x * x + y * y);
-
-                                                if (distance < minDistance) {
-                                                    minDistance = distance;
-                                                    minDistanceObj = sub;
-                                                }
-
-                                                // 判断前后
-                                                position = x > 0 ? 'right' : 'left';
-                                            }
-                                        });
-                                    });
-                                }
-                            });
-                        });
-                    }
 
                     console.log({
                         currentId: e.target.sourceData.id,
@@ -677,6 +663,15 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 });
             },
             'object:moving': (e: fabric.IEvent | any) => {
+                if (e.target.keys.type === 'subNode') {
+                    this.clusterGroups.forEach((groups: any) => {
+                        groups.forEach((cluster: any) => {
+                            if (e.target.keys.parentData.id === cluster.sourceData.id) {
+                                console.log(cluster);
+                            }
+                        });
+                    });
+                }
                 (e.target.paths || []).forEach((path: any) => {
                     const { fromObj, toObj } = path.objs;
                     const pathConfig = this.computePathConfig(
@@ -810,7 +805,10 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                         width: this.subBox.width,
                         height: this.subBox.height,
                     },
-                    { type: 'subNode' },
+                    {
+                        type: 'subNode',
+                        parentData: r,
+                    },
                 );
 
                 box.openWidth = subsGroupBox.width > box.openWidth ? subsGroupBox.width : box.openWidth;

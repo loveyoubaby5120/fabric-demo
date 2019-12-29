@@ -897,46 +897,32 @@ var ServerView = /** @class */ (function (_super) {
                 // 位置：默认在对象前面
                 var position = 'left';
                 if (e.target.keys.type === 'subNode') {
-                    var clustersId_1;
-                    _this.sourceData.forEach(function (groups) {
-                        groups.forEach(function (clusters) {
-                            (clusters.hostList || []).forEach(function (hostList) {
-                                (hostList || []).forEach(function (cluster) {
-                                    if (cluster.id && cluster.id === e.target.sourceData.id) {
-                                        clustersId_1 = clusters.id;
-                                    }
+                    _this.clusterGroups.forEach(function (groups) {
+                        groups.forEach(function (cluster) {
+                            if (e.target.keys.parentData.id === cluster.sourceData.id) {
+                                (cluster.drawObj.subsGroup || []).forEach(function (hostList) {
+                                    (hostList || []).forEach(function (sub) {
+                                        if (e.target.sourceData.id !== sub.sourceData.id) {
+                                            var subB = {
+                                                x: sub.left + sub.width / 2,
+                                                y: sub.top + sub.height / 2,
+                                            };
+                                            var x = clusterA.x - subB.x;
+                                            var y = clusterA.y - subB.y;
+                                            // 计算两个坐标点记录
+                                            var distance = Math.sqrt(x * x + y * y);
+                                            if (distance < minDistance) {
+                                                minDistance = distance;
+                                                minDistanceObj = sub;
+                                            }
+                                            // 判断前后
+                                            position = x > 0 ? 'right' : 'left';
+                                        }
+                                    });
                                 });
-                            });
+                            }
                         });
                     });
-                    if (clustersId_1) {
-                        _this.clusterGroups.forEach(function (groups) {
-                            groups.forEach(function (cluster) {
-                                if (clustersId_1 === cluster.sourceData.id) {
-                                    (cluster.drawObj.subsGroup || []).forEach(function (hostList) {
-                                        (hostList || []).forEach(function (sub) {
-                                            if (e.target.sourceData.id !== sub.sourceData.id) {
-                                                var subB = {
-                                                    x: sub.left + sub.width / 2,
-                                                    y: sub.top + sub.height / 2,
-                                                };
-                                                var x = clusterA.x - subB.x;
-                                                var y = clusterA.y - subB.y;
-                                                // 计算两个坐标点记录
-                                                var distance = Math.sqrt(x * x + y * y);
-                                                if (distance < minDistance) {
-                                                    minDistance = distance;
-                                                    minDistanceObj = sub;
-                                                }
-                                                // 判断前后
-                                                position = x > 0 ? 'right' : 'left';
-                                            }
-                                        });
-                                    });
-                                }
-                            });
-                        });
-                    }
                     console.log({
                         currentId: e.target.sourceData.id,
                         currentIndex: e.target.sourceDataIndex,
@@ -1007,6 +993,15 @@ var ServerView = /** @class */ (function (_super) {
                 });
             },
             'object:moving': function (e) {
+                if (e.target.keys.type === 'subNode') {
+                    _this.clusterGroups.forEach(function (groups) {
+                        groups.forEach(function (cluster) {
+                            if (e.target.keys.parentData.id === cluster.sourceData.id) {
+                                console.log(cluster);
+                            }
+                        });
+                    });
+                }
                 (e.target.paths || []).forEach(function (path) {
                     var _a = path.objs, fromObj = _a.fromObj, toObj = _a.toObj;
                     var pathConfig = _this.computePathConfig(fromObj, toObj, path.pathConfig.fromArrows, path.pathConfig.toArrows);
@@ -1098,7 +1093,10 @@ var ServerView = /** @class */ (function (_super) {
                     top: options.top,
                     width: _this.subBox.width,
                     height: _this.subBox.height,
-                }, { type: 'subNode' }), subsGroup = _a.groups, subsGroupBox = _a.groupBox;
+                }, {
+                    type: 'subNode',
+                    parentData: r,
+                }), subsGroup = _a.groups, subsGroupBox = _a.groupBox;
                 box.openWidth = subsGroupBox.width > box.openWidth ? subsGroupBox.width : box.openWidth;
                 box.openHeight = subsGroupBox.height > box.openHeight ? subsGroupBox.height : box.openHeight;
                 options.width = open ? box.openWidth : offset.width;
