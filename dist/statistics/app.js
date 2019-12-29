@@ -1169,6 +1169,7 @@ var ServerView = /** @class */ (function (_super) {
             var clusterGroup = new fabric_1.fabric.Group(_.flattenDeep(_.toArray(drawObj)), {
                 // 禁止四点定位
                 hasControls: false,
+                objectCaching: false,
             });
             // if (groupSubsGroup.length > 0) {
             //     drawObj.subsGroup = groupSubsGroup;

@@ -943,6 +943,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             const clusterGroup: any = new fabric.Group(_.flattenDeep(_.toArray(drawObj)), {
                 // 禁止四点定位
                 hasControls: false,
+                objectCaching: false,
             });
 
             // if (groupSubsGroup.length > 0) {
