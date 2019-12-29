@@ -163,8 +163,8 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
     ];
 
     private clusterGroups: Array<Array<fabric.Group>> = [];
-    // private openCluster: any[] = [{ id: 1 }];
-    private openCluster: any[] = [];
+    private openCluster: any[] = [{ id: '06a90dbf238865abd2077d3a735749e9' }];
+    // private openCluster: any[] = [];
 
     // 画布缩放比例
     private zoom: number = 1;
@@ -181,10 +181,8 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         width: 200,
         height: 200,
         offset: {
-            // left: 30,
-            // top: 50,
-            left: 100,
-            top: 150,
+            left: 30,
+            top: 50,
         },
 
     };
@@ -403,7 +401,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
 
         const drapPath = this.linkPath(pathConfig);
 
-        let Bezier = [];
+        let Bezier: any[] = [];
         drapPath.forEach(path => {
             if (path.indexOf('Q') !== -1) {
                 Bezier = path.split(' ');
@@ -412,7 +410,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         const maxNumberX = Math.abs(pathConfig.fromX - pathConfig.toX);
         const maxNumberY = Math.abs(pathConfig.fromY - pathConfig.toY);
 
-        const bezierPointe = [];
+        const bezierPointe: any[] = [];
         const maxNumber = maxNumberX > maxNumberX ? maxNumberX : maxNumberY;
 
         for (let i = 0; i < maxNumber; i++) {
@@ -482,7 +480,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
 
                 this.deActiveObject();
 
-                let activePath = [];
+                let activePath: any[] = [];
 
                 const vpt = this.canvas.viewportTransform;
 
@@ -530,17 +528,11 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 }
             },
             'mouse:up': (e: fabric.IEvent | any) => {
+                this.canvas.discardActiveObject().renderAll();
                 this.drag = false;
                 if (!(e.target && e.target['drawObj'])) {
                     return
                 }
-
-                // console.log(e.e.clientX, e.e.clientY, e.target.initBox);
-
-                // console.log(e.e.clientX >= e.target.initBox.minLeft);
-                // console.log(e.e.clientX <= e.target.initBox.maxLeft);
-                // console.log(e.e.clientY >= e.target.initBox.minTop);
-                // console.log(e.e.clientY <= e.target.initBox.maxTop);
 
                 if (
                     e.e.clientX >= e.target.initBox.minLeft &&
@@ -562,7 +554,61 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
 
                 // 位置：默认在对象前面
                 let position = 'left';
+                if (e.target.keys.type === 'subNode') {
+                    let clustersId: any;
+                    this.sourceData.forEach((groups: any) => {
+                        groups.forEach((clusters: any) => {
+                            (clusters.hostList || []).forEach((hostList: any) => {
+                                (hostList || []).forEach((cluster: any) => {
+                                    if (cluster.id && cluster.id === e.target.sourceData.id) {
+                                        clustersId = clusters.id;
+                                    }
+                                });
+                            });
+                        });
+                    });
+                    if (clustersId) {
+                        this.clusterGroups.forEach((groups: any) => {
+                            groups.forEach((cluster: any) => {
+                                if (clustersId === cluster.sourceData.id) {
+                                    (cluster.drawObj.subsGroup || []).forEach((hostList: any) => {
+                                        (hostList || []).forEach((sub: any) => {
+                                            if (e.target.sourceData.id !== sub.sourceData.id) {
+                                                const subB = {
+                                                    x: sub.left + sub.width / 2,
+                                                    y: sub.top + sub.height / 2,
+                                                };
+                                                const x = clusterA.x - subB.x;
+                                                const y = clusterA.y - subB.y;
 
+                                                // 计算两个坐标点记录
+                                                const distance = Math.sqrt(x * x + y * y);
+
+                                                if (distance < minDistance) {
+                                                    minDistance = distance;
+                                                    minDistanceObj = sub;
+                                                }
+
+                                                // 判断前后
+                                                position = x > 0 ? 'right' : 'left';
+                                            }
+                                        });
+                                    });
+                                }
+                            });
+                        });
+                    }
+
+                    console.log({
+                        currentId: e.target.sourceData.id,
+                        currentIndex: e.target.sourceDataIndex,
+                        position,
+                        minDistanceObjId: minDistanceObj.sourceData.id,
+                        minDistanceObjIndex: minDistanceObj.sourceDataIndex,
+                    });
+
+                    return;
+                }
                 this.clusterGroups.forEach((groups: any) => {
                     groups.forEach((cluster: any) => {
                         if (e.target.sourceData.id !== cluster.sourceData.id) {
@@ -727,6 +773,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             // 是否展开
             const open = _.findIndex(this.openCluster, oc => oc.id === r.id) !== -1 && keys.type === 'sourceNode';
             const drawObj: any = {};
+            let groupSubsGroup: fabric.Group[][] = [[]];
             let cluster: any;
             if (keys.type === 'sourceNode') {
                 // 初始化画框
@@ -830,6 +877,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 drawObj.network = [intranet, intranetLabel, internet, internetLabel];
 
                 drawObj.subsGroup = subsGroup;
+                groupSubsGroup = subsGroup;
             }
 
             objGroupBox.width = options.width > objGroupBox.width ? options.width : objGroupBox.width;
@@ -897,6 +945,10 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 hasControls: false,
             });
 
+            // if (groupSubsGroup.length > 0) {
+            //     drawObj.subsGroup = groupSubsGroup;
+            // }
+
             clusterGroup.borderColor = 'transparent';
 
             clusterGroup['open'] = open;
@@ -915,6 +967,9 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
 
             if (keys.type === 'sourceNode') {
                 this.canvas.add(clusterGroup);
+                _.flattenDeep(groupSubsGroup).forEach((sub: any) => {
+                    this.canvas.add(sub);
+                });
             }
 
             options.left = options.left + options.width + this.groupBox.offset.left;
@@ -1128,6 +1183,8 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 hasControls: false,
                 // 禁止选中
                 selectable: false,
+                // 禁用缓存
+                objectCaching: false,
             },
             option,
         ));

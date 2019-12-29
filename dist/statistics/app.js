@@ -490,8 +490,8 @@ var ServerView = /** @class */ (function (_super) {
             ],
         ];
         _this.clusterGroups = [];
-        // private openCluster: any[] = [{ id: 1 }];
-        _this.openCluster = [];
+        _this.openCluster = [{ id: '06a90dbf238865abd2077d3a735749e9' }];
+        // private openCluster: any[] = [];
         // 画布缩放比例
         _this.zoom = 1;
         _this.max_zoom = 10;
@@ -505,10 +505,8 @@ var ServerView = /** @class */ (function (_super) {
             width: 200,
             height: 200,
             offset: {
-                // left: 30,
-                // top: 50,
-                left: 100,
-                top: 150,
+                left: 30,
+                top: 50,
             },
         };
         // 服务器大小
@@ -878,15 +876,11 @@ var ServerView = /** @class */ (function (_super) {
                 }
             },
             'mouse:up': function (e) {
+                _this.canvas.discardActiveObject().renderAll();
                 _this.drag = false;
                 if (!(e.target && e.target['drawObj'])) {
                     return;
                 }
-                // console.log(e.e.clientX, e.e.clientY, e.target.initBox);
-                // console.log(e.e.clientX >= e.target.initBox.minLeft);
-                // console.log(e.e.clientX <= e.target.initBox.maxLeft);
-                // console.log(e.e.clientY >= e.target.initBox.minTop);
-                // console.log(e.e.clientY <= e.target.initBox.maxTop);
                 if (e.e.clientX >= e.target.initBox.minLeft &&
                     e.e.clientX <= e.target.initBox.maxLeft &&
                     e.e.clientY >= e.target.initBox.minTop &&
@@ -902,6 +896,56 @@ var ServerView = /** @class */ (function (_super) {
                 var minDistance = 9999999999999999999999999;
                 // 位置：默认在对象前面
                 var position = 'left';
+                if (e.target.keys.type === 'subNode') {
+                    var clustersId_1;
+                    _this.sourceData.forEach(function (groups) {
+                        groups.forEach(function (clusters) {
+                            (clusters.hostList || []).forEach(function (hostList) {
+                                (hostList || []).forEach(function (cluster) {
+                                    if (cluster.id && cluster.id === e.target.sourceData.id) {
+                                        clustersId_1 = clusters.id;
+                                    }
+                                });
+                            });
+                        });
+                    });
+                    if (clustersId_1) {
+                        _this.clusterGroups.forEach(function (groups) {
+                            groups.forEach(function (cluster) {
+                                if (clustersId_1 === cluster.sourceData.id) {
+                                    (cluster.drawObj.subsGroup || []).forEach(function (hostList) {
+                                        (hostList || []).forEach(function (sub) {
+                                            if (e.target.sourceData.id !== sub.sourceData.id) {
+                                                var subB = {
+                                                    x: sub.left + sub.width / 2,
+                                                    y: sub.top + sub.height / 2,
+                                                };
+                                                var x = clusterA.x - subB.x;
+                                                var y = clusterA.y - subB.y;
+                                                // 计算两个坐标点记录
+                                                var distance = Math.sqrt(x * x + y * y);
+                                                if (distance < minDistance) {
+                                                    minDistance = distance;
+                                                    minDistanceObj = sub;
+                                                }
+                                                // 判断前后
+                                                position = x > 0 ? 'right' : 'left';
+                                            }
+                                        });
+                                    });
+                                }
+                            });
+                        });
+                    }
+                    console.log({
+                        currentId: e.target.sourceData.id,
+                        currentIndex: e.target.sourceDataIndex,
+                        position: position,
+                        minDistanceObjId: minDistanceObj.sourceData.id,
+                        minDistanceObjIndex: minDistanceObj.sourceDataIndex,
+                    });
+                    return;
+                }
                 _this.clusterGroups.forEach(function (groups) {
                     groups.forEach(function (cluster) {
                         if (e.target.sourceData.id !== cluster.sourceData.id) {
@@ -1026,6 +1070,7 @@ var ServerView = /** @class */ (function (_super) {
             // 是否展开
             var open = _.findIndex(_this.openCluster, function (oc) { return oc.id === r.id; }) !== -1 && keys.type === 'sourceNode';
             var drawObj = {};
+            var groupSubsGroup = [[]];
             var cluster;
             if (keys.type === 'sourceNode') {
                 // 初始化画框
@@ -1092,6 +1137,7 @@ var ServerView = /** @class */ (function (_super) {
                 var internetLabel = _this.drawText('外网', __assign({}, internetBox, { originX: 'center', originY: 'top' }));
                 drawObj.network = [intranet, intranetLabel, internet, internetLabel];
                 drawObj.subsGroup = subsGroup;
+                groupSubsGroup = subsGroup;
             }
             objGroupBox.width = options.width > objGroupBox.width ? options.width : objGroupBox.width;
             objGroupBox.height = options.height > objGroupBox.height ? options.height : objGroupBox.height;
@@ -1124,6 +1170,9 @@ var ServerView = /** @class */ (function (_super) {
                 // 禁止四点定位
                 hasControls: false,
             });
+            // if (groupSubsGroup.length > 0) {
+            //     drawObj.subsGroup = groupSubsGroup;
+            // }
             clusterGroup.borderColor = 'transparent';
             clusterGroup['open'] = open;
             clusterGroup['drawObj'] = drawObj;
@@ -1139,6 +1188,9 @@ var ServerView = /** @class */ (function (_super) {
             };
             if (keys.type === 'sourceNode') {
                 _this.canvas.add(clusterGroup);
+                _.flattenDeep(groupSubsGroup).forEach(function (sub) {
+                    _this.canvas.add(sub);
+                });
             }
             options.left = options.left + options.width + _this.groupBox.offset.left;
             options.width = offset.width;
@@ -1226,6 +1278,8 @@ var ServerView = /** @class */ (function (_super) {
             hasControls: false,
             // 禁止选中
             selectable: false,
+            // 禁用缓存
+            objectCaching: false,
         }, option));
         return rect;
     };
