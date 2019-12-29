@@ -664,12 +664,34 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             },
             'object:moving': (e: fabric.IEvent | any) => {
                 if (e.target.keys.type === 'subNode') {
+                    let group: any;
+                    let left = e.target.left;
+                    let top = e.target.top;
                     this.clusterGroups.forEach((groups: any) => {
                         groups.forEach((cluster: any) => {
                             if (e.target.keys.parentData.id === cluster.sourceData.id) {
-                                console.log(cluster);
+                                group = cluster;
                             }
                         });
+                    });
+                    const minLeft = 0 - group.width / 2;
+                    const minTop = 0 - group.height / 2 + this.subBox.height / 2;
+                    const maxLeft = group.width / 2 - this.subBox.width;
+                    const maxTop = group.height / 2 - 20 - this.subBox.height;
+
+                    if (e.target.left < minLeft) {
+                        left = minLeft;
+                    } else if (e.target.left > maxLeft) {
+                        left = maxLeft;
+                    }
+                    if (e.target.top < minTop) {
+                        top = minTop;
+                    } else if (e.target.top > maxTop) {
+                        top = maxTop;
+                    }
+                    e.target.set({
+                        left,
+                        top,
                     });
                 }
                 (e.target.paths || []).forEach((path: any) => {

@@ -994,12 +994,35 @@ var ServerView = /** @class */ (function (_super) {
             },
             'object:moving': function (e) {
                 if (e.target.keys.type === 'subNode') {
+                    var group_1;
+                    var left = e.target.left;
+                    var top = e.target.top;
                     _this.clusterGroups.forEach(function (groups) {
                         groups.forEach(function (cluster) {
                             if (e.target.keys.parentData.id === cluster.sourceData.id) {
-                                console.log(cluster);
+                                group_1 = cluster;
                             }
                         });
+                    });
+                    var minLeft = 0 - group_1.width / 2;
+                    var minTop = 0 - group_1.height / 2 + _this.subBox.height / 2;
+                    var maxLeft = group_1.width / 2 - _this.subBox.width;
+                    var maxTop = group_1.height / 2 - 20 - _this.subBox.height;
+                    if (e.target.left < minLeft) {
+                        left = minLeft;
+                    }
+                    else if (e.target.left > maxLeft) {
+                        left = maxLeft;
+                    }
+                    if (e.target.top < minTop) {
+                        top = minTop;
+                    }
+                    else if (e.target.top > maxTop) {
+                        top = maxTop;
+                    }
+                    e.target.set({
+                        left: left,
+                        top: top,
                     });
                 }
                 (e.target.paths || []).forEach(function (path) {
