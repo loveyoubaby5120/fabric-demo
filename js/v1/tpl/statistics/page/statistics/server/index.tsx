@@ -1142,7 +1142,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         })) : [];
 
         let q = '';
-        if (!pathFromAndTo.Bezier) {
+        if (pathFromAndTo.Bezier) {
             q = `Q ${pathFromAndTo.Bezier.x} ${pathFromAndTo.Bezier.y}`;
         } else {
             q = `Q ${(pathConfig.fromX + pathConfig.toX) / 2 + offset / 2} ${(pathConfig.fromY + pathConfig.toY) / 2 - offset / 2}`;
