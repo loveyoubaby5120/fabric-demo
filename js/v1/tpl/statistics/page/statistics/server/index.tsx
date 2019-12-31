@@ -315,7 +315,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         Bezier?: {
             x: number;
             y: number;
-        };
+        }[];
         fromArrows: boolean;
         toArrows: boolean;
     } => {
@@ -342,7 +342,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             Bezier?: {
                 x: number;
                 y: number;
-            };
+            }[];
             fromArrows: boolean;
             toArrows: boolean;
         } = {
@@ -356,10 +356,16 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
 
         const offset = fromArrows ? 100 : -100;
 
-        pathConfig.Bezier = {
-            x: (pathConfig.fromX + pathConfig.toX) / 2 + offset / 2,
-            y: (pathConfig.fromY + pathConfig.toY) / 2 - offset / 2,
-        }
+        pathConfig.Bezier = [
+            {
+                x: (pathConfig.fromX + pathConfig.toX) / 2 + offset / 2,
+                y: (pathConfig.fromY + pathConfig.toY) / 2 - offset / 2,
+            },
+            {
+                x: (pathConfig.fromX + pathConfig.toX) / 2 + offset / 0.5,
+                y: (pathConfig.fromY + pathConfig.toY) / 2 - offset / 0.5,
+            },
+        ];
 
         return pathConfig;
     }
@@ -374,7 +380,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             Bezier?: {
                 x: number;
                 y: number;
-            };
+            }[];
             fromArrows: boolean;
             toArrows: boolean;
         } = this.computePathConfig(fromObj, toObj, fromArrows, toArrows);
@@ -1120,7 +1126,7 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         Bezier?: {
             x: number;
             y: number;
-        };
+        }[];
         fromArrows: boolean;
         toArrows: boolean;
     }): string[] => {
@@ -1141,9 +1147,16 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             toY: pathConfig.fromY,
         })) : [];
 
-        let q = '';
-        if (pathFromAndTo.Bezier) {
-            q = `Q ${pathFromAndTo.Bezier.x} ${pathFromAndTo.Bezier.y}`;
+        let q: string = '';
+        if (pathFromAndTo.Bezier && pathFromAndTo.Bezier.length > 0) {
+            q = pathFromAndTo.Bezier.map((bezier) => {
+                return `${bezier.x} ${bezier.y}`;
+            }).join(',');
+            if (pathFromAndTo.Bezier.length > 1) {
+                q = `C ${q}`;
+            } else {
+                q = `Q ${q}`;
+            }
         } else {
             q = `Q ${(pathConfig.fromX + pathConfig.toX) / 2 + offset / 2} ${(pathConfig.fromY + pathConfig.toY) / 2 - offset / 2}`;
         }

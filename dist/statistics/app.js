@@ -566,7 +566,7 @@ var ServerView = /** @class */ (function (_super) {
             };
             var fromXY = computeXY(fromObj, toObj);
             var toXY = computeXY(toObj, fromObj);
-            return {
+            var pathConfig = {
                 fromX: fromXY.x,
                 fromY: fromXY.y,
                 toX: toXY.x,
@@ -574,6 +574,18 @@ var ServerView = /** @class */ (function (_super) {
                 fromArrows: fromArrows,
                 toArrows: toArrows,
             };
+            var offset = fromArrows ? 100 : -100;
+            pathConfig.Bezier = [
+                {
+                    x: (pathConfig.fromX + pathConfig.toX) / 2 + offset / 2,
+                    y: (pathConfig.fromY + pathConfig.toY) / 2 - offset / 2,
+                },
+                {
+                    x: (pathConfig.fromX + pathConfig.toX) / 2 + offset / 0.5,
+                    y: (pathConfig.fromY + pathConfig.toY) / 2 - offset / 0.5,
+                },
+            ];
+            return pathConfig;
         };
         /** 创建链接关系 */
         _this.linkObj = function (fromObj, toObj, fromArrows, toArrows) {
@@ -687,7 +699,21 @@ var ServerView = /** @class */ (function (_super) {
                 toX: pathConfig.fromX,
                 toY: pathConfig.fromY,
             })) : [];
-            var q = "Q " + ((pathConfig.fromX + pathConfig.toX) / 2 + offset / 2) + " " + ((pathConfig.fromY + pathConfig.toY) / 2 - offset / 2);
+            var q = '';
+            if (pathFromAndTo.Bezier && pathFromAndTo.Bezier.length > 0) {
+                q = pathFromAndTo.Bezier.map(function (bezier) {
+                    return bezier.x + " " + bezier.y;
+                }).join(',');
+                if (pathFromAndTo.Bezier.length > 1) {
+                    q = "C " + q;
+                }
+                else {
+                    q = "Q " + q;
+                }
+            }
+            else {
+                q = "Q " + ((pathConfig.fromX + pathConfig.toX) / 2 + offset / 2) + " " + ((pathConfig.fromY + pathConfig.toY) / 2 - offset / 2);
+            }
             return arrows.concat([
                 "M " + pathConfig.fromX + " " + pathConfig.fromY,
                 q,
