@@ -302,10 +302,23 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
 
         this.linkObj(this.clusterGroups[0][1], this.clusterGroups[1][2], false, true);
         this.linkObj(this.clusterGroups[0][1], this.clusterGroups[1][2], true, false);
+        this.linkObj(this.clusterGroups[1][0], this.clusterGroups[1][2], false, true);
+        this.linkObj(this.clusterGroups[1][0], this.clusterGroups[1][2], true, false);
     }
 
     // 计算 path config
-    private computePathConfig = (fromObj: any, toObj: any, fromArrows: boolean, toArrows: boolean) => {
+    private computePathConfig = (fromObj: any, toObj: any, fromArrows: boolean, toArrows: boolean): {
+        fromX: any;
+        fromY: any;
+        toX: any;
+        toY: any;
+        Bezier?: {
+            x: number;
+            y: number;
+        };
+        fromArrows: boolean;
+        toArrows: boolean;
+    } => {
         const computeXY = (obj: any, comparisonObj: any) => {
             const offsetLeft = obj.left - comparisonObj.left;
             const offsetTop = obj.top - comparisonObj.top;
@@ -321,7 +334,18 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         const fromXY = computeXY(fromObj, toObj);
         const toXY = computeXY(toObj, fromObj);
 
-        return {
+        const pathConfig: {
+            fromX: any;
+            fromY: any;
+            toX: any;
+            toY: any;
+            Bezier?: {
+                x: number;
+                y: number;
+            };
+            fromArrows: boolean;
+            toArrows: boolean;
+        } = {
             fromX: fromXY.x,
             fromY: fromXY.y,
             toX: toXY.x,
@@ -329,6 +353,15 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             fromArrows,
             toArrows,
         };
+
+        const offset = fromArrows ? 100 : -100;
+
+        pathConfig.Bezier = {
+            x: (pathConfig.fromX + pathConfig.toX) / 2 + offset / 2,
+            y: (pathConfig.fromY + pathConfig.toY) / 2 - offset / 2,
+        }
+
+        return pathConfig;
     }
 
     /** 创建链接关系 */
@@ -338,6 +371,10 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             fromY: any;
             toX: any;
             toY: any;
+            Bezier?: {
+                x: number;
+                y: number;
+            };
             fromArrows: boolean;
             toArrows: boolean;
         } = this.computePathConfig(fromObj, toObj, fromArrows, toArrows);
@@ -1080,6 +1117,10 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
         fromY: number;
         toX: number;
         toY: number;
+        Bezier?: {
+            x: number;
+            y: number;
+        };
         fromArrows: boolean;
         toArrows: boolean;
     }): string[] => {
@@ -1100,7 +1141,12 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
             toY: pathConfig.fromY,
         })) : [];
 
-        const q = `Q ${(pathConfig.fromX + pathConfig.toX) / 2 + offset} ${(pathConfig.fromY + pathConfig.toY) / 2}`;
+        let q = '';
+        if (!pathFromAndTo.Bezier) {
+            q = `Q ${pathFromAndTo.Bezier.x} ${pathFromAndTo.Bezier.y}`;
+        } else {
+            q = `Q ${(pathConfig.fromX + pathConfig.toX) / 2 + offset / 2} ${(pathConfig.fromY + pathConfig.toY) / 2 - offset / 2}`;
+        }
 
         return [
             ...arrows,

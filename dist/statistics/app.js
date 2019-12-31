@@ -549,6 +549,8 @@ var ServerView = /** @class */ (function (_super) {
             _this.clusterGroups = groups;
             _this.linkObj(_this.clusterGroups[0][1], _this.clusterGroups[1][2], false, true);
             _this.linkObj(_this.clusterGroups[0][1], _this.clusterGroups[1][2], true, false);
+            _this.linkObj(_this.clusterGroups[1][0], _this.clusterGroups[1][2], false, true);
+            _this.linkObj(_this.clusterGroups[1][0], _this.clusterGroups[1][2], true, false);
         };
         // 计算 path config
         _this.computePathConfig = function (fromObj, toObj, fromArrows, toArrows) {
@@ -685,7 +687,7 @@ var ServerView = /** @class */ (function (_super) {
                 toX: pathConfig.fromX,
                 toY: pathConfig.fromY,
             })) : [];
-            var q = "Q " + ((pathConfig.fromX + pathConfig.toX) / 2 + offset) + " " + (pathConfig.fromY + pathConfig.toY) / 2;
+            var q = "Q " + ((pathConfig.fromX + pathConfig.toX) / 2 + offset / 2) + " " + ((pathConfig.fromY + pathConfig.toY) / 2 - offset / 2);
             return arrows.concat([
                 "M " + pathConfig.fromX + " " + pathConfig.fromY,
                 q,
