@@ -361,10 +361,6 @@ class ServerView extends React.Component<RouteComponentProps<any>, {}> {
                 x: (pathConfig.fromX + pathConfig.toX) / 2 + offset / 2,
                 y: (pathConfig.fromY + pathConfig.toY) / 2 - offset / 2,
             },
-            {
-                x: (pathConfig.fromX + pathConfig.toX) / 2 + offset / 0.5,
-                y: (pathConfig.fromY + pathConfig.toY) / 2 - offset / 0.5,
-            },
         ];
 
         return pathConfig;
