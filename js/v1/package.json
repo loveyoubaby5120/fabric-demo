@@ -12,7 +12,7 @@
     "dependencies": {
         "fabric": "3.5.0",
         "antd": "3.18.0",
-        "axios": "0.18.0",
+        "axios": "0.21.1",
         "base64-loader": "1.0.0",
         "bizcharts": "^3.5.4",
         "http-proxy-middleware": "0.19.1",
